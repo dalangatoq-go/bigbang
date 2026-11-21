@@ -1,0 +1,2 @@
+window.GP_CFG={url:'https://erspkduznzrntfzchdbk.supabase.co',
+  key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyc3BrZHV6bnpybnRmemNoZGJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MTIyNDYsImV4cCI6MjExMDM4ODI0Nn0.L3nQicgSXr8j_ctjRC8RxPZLSpHj71tLXljfmA3vy6I'};
