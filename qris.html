@@ -136,6 +136,20 @@ svg,img{display:block}
 @keyframes shk{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 .em{margin:12px 18px 0;color:#e5484d;font-size:12.5px;line-height:17px;flex:none}
 .em:empty{display:none}
+/* loader validasi PIN: layar gelap -> teks muncul -> cincin berwarna */
+#pin.hid{visibility:hidden}
+#ld{position:absolute;inset:0;z-index:7;display:none;background:rgba(12,16,18,.8);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity .3s ease}
+#ld.on{display:block}
+#ld.vis{opacity:1}
+#ld .lt{position:absolute;left:0;right:0;top:calc(11% + var(--sat));padding:0 24px;text-align:center;color:#eceff1;font:700 30px/1.25 Georgia,'Times New Roman',serif;letter-spacing:-.3px;opacity:0;transform:translateY(10px)}
+#ld.vis .lt{animation:ldT .55s .4s cubic-bezier(.2,.8,.2,1) both}
+#ld .lr{position:absolute;left:50%;top:50%;width:78px;height:78px;margin:-39px 0 0 -39px;border-radius:50%;opacity:0;
+  background:conic-gradient(#f0a9bf 0 28%,#4cd97a 28% 31%,#3b2cf0 31% 68%,#e8dc3c 68% 86%,#3b2cf0 86% 91%,#4cd97a 91% 100%);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6.5px))}
+#ld.vis .lr{animation:ldR .35s .15s ease-out both,ldS 1s linear infinite}
+@keyframes ldT{to{opacity:1;transform:none}}
+@keyframes ldR{to{opacity:1}}
+@keyframes ldS{to{transform:rotate(360deg)}}
 /* animasi GIF sebelum rincian akhir */
 #anim{background:#77eeff;z-index:7}
 #anim.on{animation:none}
@@ -284,6 +298,9 @@ svg,img{display:block}
   <div class="pad" id="pad2"></div>
 </section>
 
+<!-- LOADER validasi PIN -->
+<section class="s" id="ld" aria-live="polite" aria-hidden="true"><div class="lt">Lagi disiapin dulu, ya..</div><i class="lr"></i></section>
+
 <!-- ANIMASI (GIF) sebelum berhasil -->
 <section class="s" id="anim" aria-hidden="true"></section>
 
@@ -334,7 +351,7 @@ svg,img{display:block}
 var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
 var M=null,amt='',scanOn=false,stream=null,det=null,busy=false,pin='',timers=[];
 var ST=['scan','nom','rev'],cur='scan';
-var GIF='assets/qris/bayar-berhasil.gif?v=2',ANIM_MS=3200,HOLD_MS=350; /* GIF diperlambat 2x (±3,2 dtk) agar terlihat jelas */
+var GIF='assets/qris/bayar-berhasil.gif?v=3',ANIM_MS=2200,HOLD_MS=350; /* GIF diperlambat 1,33x (±2,1 dtk) */
 new Image().src=GIF; /* preload supaya animasi langsung jalan */
 function rp(n){return 'Rp'+Number(n||0).toLocaleString('id-ID')}
 function toast(t){var e=$('#tt');e.textContent=t;e.classList.add('on');clearTimeout(toast.k);toast.k=setTimeout(function(){e.classList.remove('on')},2000)}
@@ -346,7 +363,7 @@ function show(n,back){cur=n;$$('.s').forEach(function(s){s.classList.remove('on'
   if(n==='scan')camStart();else camStop();
   if(n==='rev')review();else{clr();e&&$('#rev').classList.remove('ok')}}
 function push(n){history.pushState({s:n},'');show(n)}
-addEventListener('popstate',function(e){var s=e.state&&e.state.s||'scan';if($('#pin').classList.contains('on')){closePin();history.pushState({s:'rev'},'');return}show(s,true)});
+addEventListener('popstate',function(e){if($('#ld').classList.contains('on')){history.pushState({s:'rev'},'');return}var s=e.state&&e.state.s||'scan';if($('#pin').classList.contains('on')){closePin();history.pushState({s:'rev'},'');return}show(s,true)});
 history.replaceState({s:'scan'},'');
 document.addEventListener('click',function(e){var x=e.target.closest('[data-x]');if(x){if(cur==='scan')location.href='index.html';else history.back();return}
   var t=e.target.closest('[data-t]');if(t)toast(t.getAttribute('data-t'))});
@@ -389,12 +406,15 @@ function closePin(){$('#pin').classList.remove('on');pin='';dots();$('#em').text
 pad($('#pad2'),function(v){if(busy)return;if(v==='b')pin=pin.slice(0,-1);else if(pin.length<6)pin+=v;dots();$('#em').textContent='';if(pin.length===6)kirim()},false);
 $('#bayar').onclick=function(){pin='';dots();$('#pin').classList.add('on')};
 $('#pinx').onclick=function(){if(!busy)closePin()};
-function kirim(){busy=true;var c=window.GP_CFG||{};
+var LD_MIN=1900; /* loader minimal tampil (ms) agar teks & cincin sempat terlihat */
+function ldShow(){var l=$('#ld');l.classList.add('on');l.setAttribute('aria-hidden','false');void l.offsetWidth;l.classList.add('vis');$('#pin').classList.add('hid')}
+function ldHide(){var l=$('#ld');l.classList.remove('vis');l.setAttribute('aria-hidden','true');setTimeout(function(){if(!l.classList.contains('vis'))l.classList.remove('on')},320)}
+function kirim(){busy=true;var c=window.GP_CFG||{},t0=Date.now();ldShow();
   fetch(c.url+'/rest/v1/rpc/input_gcx',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json'},
     body:JSON.stringify({pin:pin,p_jumlah:+amt,p_acquirer_name:M.acq||null,p_merchant_name:M.name,p_merchant_location:loc(M),p_merchant_pan:M.pan||null,p_terminal_id:M.term||null})})
   .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j&&(j.message||j.hint)||'Gagal');return j})})
-  .then(function(j){busy=false;closePin();var r=baris(j);try{isi(r)}catch(x){console.error(x)}history.replaceState({s:'ok'},'');animasi(buka)})
-  .catch(function(e){busy=false;pin='';dots();var d=$('#dots');d.classList.remove('err');void d.offsetWidth;d.classList.add('err');$('#em').textContent=e.message||'PIN salah atau jaringan bermasalah'})}
+  .then(function(j){setTimeout(function(){busy=false;closePin();$('#pin').classList.remove('hid');var r=baris(j);try{isi(r)}catch(x){console.error(x)}history.replaceState({s:'ok'},'');animasi(buka);setTimeout(ldHide,120)},Math.max(0,LD_MIN-(Date.now()-t0)))})
+  .catch(function(e){busy=false;pin='';dots();ldHide();$('#pin').classList.remove('hid');var d=$('#dots');d.classList.remove('err');void d.offsetWidth;d.classList.add('err');$('#em').textContent=e.message||'PIN salah atau jaringan bermasalah'})}
 $('#cls').onclick=function(){location.href='index.html'};
 
 /* ---- animasi GIF (sekali putar) lalu popup rincian naik dari bawah ---- */
