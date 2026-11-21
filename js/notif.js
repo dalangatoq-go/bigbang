@@ -2,7 +2,7 @@
    Sumber: INSERT pada tabel history lewat Supabase Realtime (WebSocket), jadi banner + suara muncul
    hitungan milidetik setelah server mencatat transaksi — tanpa menunggu web push.
    Jalur kedua: pesan PUSH_SOUND dari sw.js (web push) memakai fungsi yang sama; keduanya dideduplikasi per id.
-   - Hanya baris dari aksi Gx (gx_id terisi), sama seperti trigger server history_notifikasi_push.
+   - SETIAP baris baru di history ditampilkan (trigger server history_notifikasi_push juga mengirim untuk semua baris).
    - Teks pesan sama persis dengan fungsi SQL history_pesan_notifikasi.
    - Suara: mynotification.mp3 lewat window.GPBunyi (update.js). Saat aplikasi tersembunyi, yang berbunyi
      notifikasi sistem dari web push.
@@ -15,7 +15,7 @@
   if (!ui) return;
 
   var HALAMAN_RIWAYAT = '';   // isi 'riwayat.html' bila halaman itu ada; kosong = ketuk banner hanya menutupnya
-  var TAMPIL_MS = 5000, SKIP_KEY = 'gp_notif_skip', SKIP_MS = 3 * 864e5;
+  var TAMPIL_MS = 4500, SKIP_KEY = 'gp_notif_skip', SKIP_MS = 3 * 864e5;
   var sudah = {};                                   // id history yang sudah dibunyikan/ditampilkan
   var bannerEl = null, tutupT = 0;
 
@@ -31,8 +31,12 @@
       if (r.jenis === 'bayar_teman') return 'Payment failed. ' + n + ' could not be processed.';
       return 'Transaction failed. ' + n + ' could not be processed.';
     }
-    if (r.jenis === 'topup') return 'Top up successful. ' + n + ' added to GoPay.';
-    if (r.jenis === 'bayar_teman') return r.arah === 'keluar' ? 'You have paid ' + n + ' from GoPay.' : 'You have received ' + n + ' on GoPay.';
+    if (r.jenis === 'topup') return 'you have received ' + n + ' on GoPay';
+    if (r.jenis === 'bayar_teman') {
+      if (r.arah === 'keluar') return 'You have paid ' + n + ' from GoPay.';
+      var m = /^Diterima dari\s+(\S.*)$/.exec(String(r.judul || ''));
+      return m ? m[1].trim() + ' has sent ' + n + ' to you on GoPay' : 'you have received ' + n + ' on GoPay';
+    }
     return 'Transaction successful. ' + n + '.';
   }
 
@@ -105,13 +109,13 @@
     (window.supabase && window.GP_CFG ? (window.__sb = window.supabase.createClient(window.GP_CFG.url, window.GP_CFG.key)) : null);
   function prosesHistoryRealtime(p) {
     var r = p && p.new;
-    if (!r || r.gx_id == null) return;                           // hanya dari aksi Gx, seperti trigger server
+    if (!r || r.id == null) return;                              // SETIAP baris baru di history ditampilkan
     tampil(r.id, pesan(r), 'GoPay');
   }
   // Halaman Riwayat sudah memiliki subscription untuk semua perubahan history.
   // Pakai event INSERT dari kanal itu agar tidak membuka kanal history kedua.
   GP._notifHistoryRealtime = prosesHistoryRealtime;
-  if (sb && document.body.getAttribute('data-tab') !== 'Riwayat') {
+  if (sb) {                                                        // dedup per id: aman walau jalur lain juga memanggil
     sb.channel('notif-history')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'history' }, prosesHistoryRealtime)
       .subscribe();
