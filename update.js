@@ -38,10 +38,19 @@
   navigator.serviceWorker.addEventListener('controllerchange', function () { if (hadController && !recentlyReloaded()) tawarkan(); hadController = true; });
   /* Suara notifikasi: mynotification.mp3 dibunyikan saat push masuk dan aplikasi sedang terbuka.
      Browser mewajibkan satu sentuhan pengguna dulu, jadi audio "dibuka kuncinya" pada interaksi pertama. */
-  var bunyi = null;
-  function siapAudio() { if (!bunyi) { bunyi = new Audio('mynotification.mp3'); bunyi.preload = 'auto'; } return bunyi; }
+  var AC = null, buf = null, memuat = false, bunyi = null;
+  function ctx() { if (!AC) { var C = window.AudioContext || window.webkitAudioContext; if (C) { try { AC = new C({ latencyHint: 'interactive' }); } catch (_) { try { AC = new C(); } catch (e) {} } } } return AC; }
+  function muat() {                                              // decode sekali di awal agar bunyi nyaris tanpa jeda
+    if (memuat || buf) return; var c = ctx(); if (!c) return; memuat = true;
+    fetch('mynotification.mp3').then(function (r) { return r.arrayBuffer(); })
+      .then(function (b) { return new Promise(function (ok, no) { c.decodeAudioData(b, ok, no); }); })
+      .then(function (d) { buf = d; }).catch(function () { memuat = false; });
+  }
+  function siapAudio() { if (!bunyi) { bunyi = new Audio('mynotification.mp3'); bunyi.preload = 'auto'; bunyi.volume = 1; } return bunyi; }
+  var EV = ['pointerdown', 'keydown', 'touchstart', 'click'];
   function bukaKunci() {
-    ['pointerdown', 'keydown', 'touchstart'].forEach(function (n) { document.removeEventListener(n, bukaKunci, true); });
+    EV.forEach(function (n) { document.removeEventListener(n, bukaKunci, true); });
+    try { var c = ctx(); if (c && c.state !== 'running') c.resume().catch(function () {}); muat(); } catch (_) {}
     try {
       var a = siapAudio(); a.muted = true;
       var p = a.play();
@@ -49,13 +58,20 @@
       if (p && p.then) p.then(selesai).catch(function () { a.muted = false; }); else selesai();
     } catch (_) {}
   }
-  ['pointerdown', 'keydown', 'touchstart'].forEach(function (n) { document.addEventListener(n, bukaKunci, true); });
-  var terakhir = 0;
-  function bunyikan() {
+  EV.forEach(function (n) { document.addEventListener(n, bukaKunci, true); });
+  document.addEventListener('DOMContentLoaded', muat);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && AC && AC.state !== 'running') AC.resume().catch(function () {}); });
+  function bunyikan() {                                          // volume pemutar = 1.0 (maksimum yang boleh diatur web); tiap panggilan dibunyikan (dedup per id ada di notif.js)
     if (document.hidden) return;
-    var n = Date.now(); if (n - terakhir < 1500) return;          // realtime + web push untuk transaksi yang sama: satu bunyi
-    terakhir = n;
-    try { var a = siapAudio(); a.currentTime = 0; var p = a.play(); if (p && p.catch) p.catch(function () {}); } catch (_) {}
+    var c = ctx();
+    if (c && buf) {
+      try {
+        if (c.state !== 'running') c.resume();
+        var s = c.createBufferSource(), g = c.createGain();
+        s.buffer = buf; g.gain.value = 1; s.connect(g); g.connect(c.destination); s.start(0); return;
+      } catch (_) {}
+    }
+    try { var a = siapAudio(); a.volume = 1; a.currentTime = 0; var p = a.play(); if (p && p.catch) p.catch(function () {}); } catch (_) {}
   }
   window.GPBunyi = bunyikan;                                       // dipakai juga oleh js/notif.js (notifikasi realtime)
   navigator.serviceWorker.addEventListener('message', function (e) {

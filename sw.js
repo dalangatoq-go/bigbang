@@ -15,7 +15,7 @@
    Tidak ada nomor versi yang perlu dinaikkan. Bila suatu saat ingin menghapus
    semua cache paksa, ganti CACHE saja.
    ========================================================================== */
-var CACHE = 'app-runtime-10';
+var CACHE = 'app-runtime-11';
 var GAMBAR = [];   // dibuat otomatis dari assets/img (lihat README)
 var CORE = ['./', './index.html', './akun.html', './masuk.html', './onboarding.html', './pin.html', './qris.html', './offline.html',
             './manifest.webmanifest', './update.js', './js/install.js', './css/install.css', './push.js', './js/notif.js', './js/config.js', './mynotification.mp3',

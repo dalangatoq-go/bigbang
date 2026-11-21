@@ -1366,7 +1366,7 @@ function wsConnect(){
   me.onmessage=function(ev){wsLast=Date.now();var m;try{m=JSON.parse(ev.data)}catch(_){return}
     if(m.event==='phx_reply'&&m.topic===WT){if(m.payload&&m.payload.status==='ok'){wsOk=true;wsRetry=0;syncAll()}else wsOk=false}
     else if(m.event==='postgres_changes'&&m.payload&&m.payload.data){var d=m.payload.data;
-      if(d.type==='DELETE')return;if(d.table==='g')applyG(d.record);else if(d.table==='profil')applyProfil(d.record);else if(d.table==='history')applyHistory(d.record)}
+      if(d.type==='DELETE')return;if(d.table==='g')applyG(d.record);else if(d.table==='profil')applyProfil(d.record);else if(d.table==='history'){applyHistory(d.record);if(d.type==='INSERT'&&window.GP&&GP._notifHistoryRealtime)GP._notifHistoryRealtime({'new':d.record})}}
     else if(m.event==='phx_error'||m.event==='phx_close'){wsOk=false}};
   me.onclose=function(){if(ws===me){wsOk=false;clearInterval(wsHb);wsLater()}};
   me.onerror=function(){try{me.close()}catch(_){}}}

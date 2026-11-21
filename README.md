@@ -36,7 +36,9 @@ Uji lokal: `npx serve .`
 ## Notifikasi (hanya di `index.html`)
 - Urutan script: supabase-js -> `js/config.js` -> `push.js` -> `js/notif.js` -> `update.js` -> `js/install.js`.
 - Banner "Aktifkan notifikasi" muncul ~2,5 dtk setelah halaman terbuka, **menunggu popup Pasang selesai** agar tidak bertumpuk. "Nanti" = disembunyikan 3 hari (`SKIP_MS`). Tidak muncul bila izin sudah diberikan/ditolak atau browser tanpa `PushManager` (mis. iPhone di tab Safari: push iOS hanya jalan setelah app ditambahkan ke Layar Utama).
-- App terbuka: banner + bunyi dari Supabase Realtime (id yang sama dari push tidak dobel). App tertutup: notifikasi sistem dari `sw.js`.
+- Teks notifikasi: Top Up = `you have received Rp<nominal> on GoPay`; Via GoPay/Kirim ke teman = `<Nama_Pengirim> has sent Rp<nominal> to you on GoPay` (nama dari `history.judul` "Diterima dari <nama>"). Sama di `js/notif.js` dan fungsi SQL `history_pesan_notifikasi`.
+- Suara: `update.js` men-decode `mynotification.mp3` sekali (Web Audio, volume pemutar 1.0) dan memutarnya seketika; browser mewajibkan satu sentuhan pertama untuk membuka kunci audio. Volume perangkat tidak bisa diatur dari web.
+- App terbuka: banner + bunyi dari Supabase Realtime (dua jalur: koneksi realtime `index.html` dan `js/notif.js`, dideduplikasi per id) (id yang sama dari push tidak dobel). App tertutup: notifikasi sistem dari `sw.js`.
 - `HALAMAN_RIWAYAT` di `js/notif.js` kosong (repo ini belum punya `riwayat.html`); isi bila halaman itu dibuat agar ketuk banner membukanya.
 - **Butuh sisi server di proyek Supabase Anda** (tidak ada di repo ini): tabel `history`, tabel `push_perangkat`, RPC `daftar_perangkat`, trigger `history_notifikasi_push`, dan edge function `kirim-push` (+ kunci VAPID privat). Tanpa itu, banner realtime tetap jalan bila `history` ada, tetapi web push tidak terkirim.
 
