@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Tidak ada koneksi</title>
+<style>
+:root{color-scheme:dark light;--bg:#131517;--fg:#fff;--mut:#9aa3aa;--blue:#00aed6}
+@media (prefers-color-scheme:light){:root{--bg:#f2f4f6;--fg:#1a1d20;--mut:#6c757d}}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:32px 28px calc(32px + env(safe-area-inset-bottom));text-align:center}
+svg{width:72px;height:72px;stroke:var(--blue);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:8px}
+h1{font-size:20px;font-weight:700}
+p{font-size:14px;line-height:1.5;color:var(--mut);max-width:300px}
+button{margin-top:16px;height:46px;padding:0 28px;border:0;border-radius:23px;background:var(--blue);color:#fff;font:inherit;font-weight:700;font-size:15px}
+button:active{opacity:.85}
+body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:env(safe-area-inset-bottom,0px);background:#000;pointer-events:none}
+</style>
+</head>
+<body>
+<main>
+<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 18a26 26 0 0 1 36 0M12 25a17 17 0 0 1 24 0M18.500 32a8 8 0 0 1 11 0"/><circle cx="24" cy="39" r="1.500" fill="var(--blue)"/><path d="M8 8l32 32"/></svg>
+<h1>Tidak ada koneksi</h1>
+<p>Halaman ini belum tersimpan di perangkat. Periksa sinyal atau Wi-Fi kamu, lalu coba lagi.</p>
+<button id="r">Coba lagi</button>
+</main>
+<script>
+document.getElementById('r').onclick=function(){location.reload()};
+addEventListener('online',function(){location.reload()});
+</script>
+</body>
+</html>
