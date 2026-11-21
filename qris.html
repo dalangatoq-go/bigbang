@@ -28,10 +28,18 @@ svg,img{display:block}
 #scan{background:radial-gradient(120% 80% at 50% 30%,#2a1d22 0,#17110f 55%,#0c0a0b 100%)}
 #cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
 #cam.live{opacity:1}
-.lines{position:absolute;left:0;right:0;top:0;height:125px;pointer-events:none;overflow:hidden;
-  -webkit-mask-image:linear-gradient(#000 40%,transparent);mask-image:linear-gradient(#000 40%,transparent)}
-.lines i{position:absolute;inset:-60px 0 0;background:repeating-linear-gradient(#1f7fe0 0 2px,transparent 2px 6px);opacity:.85;animation:scn 2.4s ease-in-out infinite alternate}
-@keyframes scn{from{transform:translateY(-30px);opacity:.45}to{transform:translateY(52px);opacity:.95}}
+/* garis scanner biru: menyapu naik-turun di seluruh area kamera (di atas sheet bawah) */
+.lines{position:absolute;left:0;right:0;top:0;bottom:calc(215px + var(--sab));pointer-events:none;overflow:hidden}
+.lines i{position:absolute;left:0;right:0;top:0;height:125px;background:repeating-linear-gradient(#1f7fe0 0 2px,transparent 2px 6px);opacity:.9;
+  -webkit-mask-image:linear-gradient(to top,#000 12%,transparent);mask-image:linear-gradient(to top,#000 12%,transparent);
+  animation:scn 3.4s linear infinite;will-change:top,transform}
+.lines i::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:#5ab0ff;box-shadow:0 0 14px 3px rgba(31,127,224,.75)}
+@keyframes scn{
+  0%{top:0;transform:scaleY(1);animation-timing-function:ease-in-out}
+  49.99%{top:calc(100% - 125px);transform:scaleY(1)}
+  50%{top:calc(100% - 125px);transform:scaleY(-1);animation-timing-function:ease-in-out}
+  100%{top:0;transform:scaleY(-1)}}
+@media (prefers-reduced-motion:reduce){.lines i{animation:none;top:calc(50% - 62px)}}
 .ibar{position:absolute;left:0;right:0;top:calc(15px + var(--sat));display:flex;justify-content:space-between;padding:0 22px;z-index:2}
 .ibar div{display:flex;gap:11px}
 .ci{width:37px;height:37px;border-radius:50%;background:rgba(255,255,255,.15);display:grid;place-items:center;color:#cfd5dd;backdrop-filter:blur(6px)}
@@ -104,22 +112,105 @@ svg,img{display:block}
 .sp svg,.go svg.sp2{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* ---------- PIN + berhasil ---------- */
-.ov{position:absolute;inset:0;z-index:6;background:rgba(0,0,0,.55);display:none;align-items:flex-end;opacity:0;transition:opacity .25s}
-.ov.on{display:flex;opacity:1}
-.ps{width:100%;background:var(--bg);border-radius:24px 24px 0 0;padding:20px 0 calc(8px + var(--sab));animation:up .35s cubic-bezier(.2,.8,.2,1) both}
-.ps h2{text-align:center;color:var(--wh);font-size:16px;font-weight:700}
-.dots{display:flex;gap:14px;justify-content:center;margin:20px 0 8px}
-.dots i{width:13px;height:13px;border-radius:50%;border:2px solid #4b5158;transition:.15s}
-.dots i.f{background:var(--g1);border-color:var(--g1);transform:scale(1.1)}
+#pin{position:absolute;inset:0;z-index:6;background:var(--bg);display:none;flex-direction:column}
+#pin.on{display:flex;animation:pinIn .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes pinIn{from{opacity:0;transform:translateY(28px)}}
+.pt{display:flex;align-items:center;height:calc(56px + var(--sat));padding:var(--sat) 15px 0 18px;gap:20px;flex:none}
+.pt h2{flex:1;font-size:17.5px;font-weight:700;color:var(--wh)}
+#pin .x{color:#d5d9df}
+.pi{width:22px;height:22px;flex:none;border-radius:50%}
+.pi svg{width:22px;height:22px}
+.pd{margin:12px 18px 0;font-size:13.5px;line-height:17.5px;color:#eceef2}
+.pf{margin:16px 15px 0;height:103px;padding:15px;border-radius:22px;background:var(--card);box-shadow:0 1px 0 #2f353a inset;flex:none}
+.dots{display:flex;align-items:center;justify-content:center;gap:27px;height:100%;border-radius:12px;background:var(--in);box-shadow:inset 0 2px 6px rgba(0,0,0,.35)}
+.dots i{width:13px;height:13px;border-radius:50%;border:1.8px solid #9aa1ab;transition:background .15s,border-color .15s,transform .15s}
+.dots i.f{background:var(--wh);border-color:var(--wh);transform:scale(1.12)}
 .dots.err{animation:shk .35s}
+.lp{align-self:flex-start;display:flex;align-items:center;height:39px;margin:18px 15px 0;padding:0 19px;border-radius:20px;background:#1b4430;color:#3fdc7d;font-weight:700;font-size:14.5px;flex:none}
+.lp:active{filter:brightness(1.25)}
+.pw2{margin:auto 0 34px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--wh);font-weight:700;font-size:14px;flex:none}
+.pw2 b{font-size:16px;letter-spacing:-.2px;margin-left:-2px}
+#pad2{margin-top:0;padding-bottom:calc(6px + var(--sab));flex:none}
+#pad2 button{height:78px;font-size:26px}
+#pad2 svg{color:#fff}
 @keyframes shk{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
-.em{min-height:34px;text-align:center;color:#e5484d;font-size:12.5px;padding:0 24px}
-#ok{background:var(--bg);z-index:7;align-items:center;justify-content:center;text-align:center;gap:6px}
-#ok svg{width:84px;height:84px;margin-bottom:12px}
-#ok circle{fill:none;stroke:var(--g2);stroke-width:5;stroke-dasharray:226;stroke-dashoffset:226;animation:dr .6s .1s ease-out forwards}
-#ok path{fill:none;stroke:var(--g2);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:50;stroke-dashoffset:50;animation:dr .4s .6s ease-out forwards}
+.em{margin:12px 18px 0;color:#e5484d;font-size:12.5px;line-height:17px;flex:none}
+.em:empty{display:none}
+/* animasi GIF sebelum rincian akhir */
+#anim{background:#77eeff;z-index:7}
+#anim.on{animation:none}
+#anim img{width:100%;height:100%;object-fit:cover;transition:transform .95s cubic-bezier(.2,.8,.2,1),filter .95s}
+#anim.away img{transform:translateY(-6%) scale(.92);filter:brightness(.55)}
+/* ---------- rincian akhir (popup naik dari bawah) ---------- */
+#ok{z-index:8;background:var(--bg);overflow:hidden}
+#ok.on{animation:sheetUp .9s both}
+@keyframes sheetUp{
+  0%{transform:translateY(100%);border-radius:30px 30px 0 0;box-shadow:0 -24px 70px rgba(0,0,0,.55);animation-timing-function:cubic-bezier(.22,.9,.3,1)}
+  64%{transform:translateY(-1.8%);border-radius:18px 18px 0 0;animation-timing-function:ease-in-out}
+  100%{transform:none;border-radius:0;box-shadow:none}}
+#rc{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+#rc::-webkit-scrollbar{display:none}
+.hero{position:relative;height:calc(140px + var(--sat))}
+.hbg{position:absolute;left:0;top:0;width:100%;height:calc(240px + var(--sat))}
+.chk{position:absolute;left:50%;top:calc(24px + var(--sat));width:92px;height:92px;margin-left:-46px}
+.chk svg{position:relative;width:92px;height:92px}
+.chk path{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
+.ring{position:absolute;inset:0;border-radius:50%;border:3px solid #00b049;opacity:0}
+.tb{position:absolute;left:0;right:0;top:calc(15px + var(--sat));padding:0 15px;display:flex;justify-content:space-between;z-index:3;pointer-events:none}
+.tb div{display:flex;gap:15px}
+.rb{pointer-events:auto;width:37.5px;height:37.5px;border-radius:50%;background:#262b2e;display:grid;place-items:center;color:#9aa1ab}
+.rb:active{filter:brightness(1.4)}
+.card{position:relative;z-index:1;margin:0 15px;padding:15px 15px 18px;border-radius:20px;background:#252a2e;text-align:center}
+.av2{width:52px;height:52px;margin:0 auto;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#575757,#1b1b1b 62%,#000);border:1px solid #3a3d40;color:#fff;font:700 22px "Bitter Emb",Georgia,serif}
+.rp{margin-top:20px;font:700 24px/1.15 "Bitter Emb",Georgia,serif;color:var(--wh)}
+.rt{margin-top:9px;font-size:13px;line-height:19px;color:#c5cbd8}
+.rs{margin-top:6px;font-size:12px;line-height:17px;color:#b9bfcc}
+.dv,.dd{height:0;border-top:1px dashed #3a4046}
+.dv{margin:23px -5px 0}
+.card h3{margin-top:22px;text-align:left;font-size:15px;font-weight:700;color:var(--wh)}
+.rw{display:flex;align-items:center;justify-content:space-between;gap:12px;height:26px;margin-top:0;text-align:left;font-size:14.5px;color:#c5cbd8}
+.rw>span:first-child{flex:none}
+.rw.first{margin-top:11px}
+.rw .v{display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:0;max-width:62%}
+.rw .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.rw.b{color:var(--wh);font-weight:700}
+.rw.pay{margin-top:4px}
+.st{color:#009c11;font-weight:500}.st.bad{color:#e5484d}
+.cp{width:14px;height:14px;flex:none;display:grid;place-items:center;color:#b9bfcc}
+.cp:active{filter:brightness(1.5)}
+.gpi{flex:none}
+.dd{margin:8px -5px}
+.more{display:grid;grid-template-rows:0fr;transition:grid-template-rows .55s cubic-bezier(.2,.8,.2,1)}
+.more>div{min-height:0;overflow:hidden;opacity:0;transition:opacity .3s}
+#ok.open .more{grid-template-rows:1fr}
+#ok.open .more>div{opacity:1;transition:opacity .45s .12s}
+.exp{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:31px;margin-top:10px;border-radius:16px;background:#292e32;border:1px solid #30363a;color:#c5cbd8;font-weight:700;font-size:12.5px}
+.exp svg{transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+#ok.open .exp svg{transform:rotate(180deg)}
+.exp:active{filter:brightness(1.25)}
+.spc{height:calc(111px + var(--sab))}
+.bar{position:absolute;left:0;right:0;bottom:0;z-index:4;box-shadow:0 40px 0 #252a2e}
+.bn{height:60px;padding:12px 15px 0;border-radius:20px 20px 0 0;background:#00aa13;color:#fff;font-weight:700;font-size:13px;line-height:17px}
+.pn{position:relative;margin-top:-20px;padding:8px 8px calc(14px + var(--sab));border-radius:20px 20px 0 0;background:#252a2e}
+.pn::before{content:"";position:absolute;left:57px;top:0;border:6px solid transparent;border-top-color:#00aa13;border-bottom:0}
+.tl{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.tl .c{text-align:center}
+.tl2{display:grid;place-items:center;width:100%;height:43.5px;border-radius:14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22);transition:filter .15s,transform .15s}
+.tl2:active{filter:brightness(1.25);transform:scale(.97)}
+.tl p{margin-top:9px;font-size:12px;line-height:14px;color:#c5cbd8}
+#ok.on .chk{animation:pop .75s .38s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes pop{from{transform:scale(0) rotate(-24deg);opacity:0}}
+#ok.on .chk path{stroke-dasharray:100;stroke-dashoffset:100;animation:dr .45s .78s ease-out forwards}
 @keyframes dr{to{stroke-dashoffset:0}}
-#ok h2{color:var(--wh);font-size:19px}#ok .go{align-self:stretch;margin-top:30px}
+#ok.on .ring{animation:ring 1s .62s ease-out both}
+@keyframes ring{from{transform:scale(1);opacity:.75}to{transform:scale(1.9);opacity:0}}
+#ok.on .rv{animation:rv .65s calc(.5s + var(--d,0s)) cubic-bezier(.2,.8,.2,1) both}
+@keyframes rv{from{opacity:0;transform:translateY(16px)}}
+#ok.on .tb{animation:rv .5s .55s both}
+#ok.on .bar{animation:barUp .75s .55s cubic-bezier(.2,.9,.25,1.07) both}
+@keyframes barUp{from{transform:translateY(105%)}}
+#ok.on~.tt{bottom:calc(150px + var(--sab))}
+@media (prefers-reduced-motion:reduce){#ok.on,#ok.on *{animation-duration:.01s!important;animation-delay:0s!important}}
 .tt{position:absolute;left:50%;bottom:calc(120px + var(--sab));transform:translate(-50%,10px);background:#3b4046;color:#fff;font-size:12px;padding:8px 14px;border-radius:18px;opacity:0;pointer-events:none;transition:.2s;z-index:9;white-space:nowrap}
 .tt.on{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -179,10 +270,59 @@ svg,img{display:block}
 </section>
 
 <!-- PIN -->
-<div class="ov" id="pin"><div class="ps"><h2>Masukkan PIN kamu</h2><div class="dots" id="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="em" id="em"></div><div class="pad" id="pad2"></div></div></div>
+<section id="pin" aria-label="Masukkan PIN">
+  <div class="pt">
+    <button class="x" id="pinx" type="button" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    <h2>Masukkin PIN kamu</h2>
+    <button class="pi" type="button" data-t="Info PIN belum tersedia" aria-label="Info"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="11" fill="#e9ebef"/><circle cx="11" cy="6.4" r="1.5" fill="#2a2d31"/><rect x="9.8" y="9.4" width="2.4" height="7" rx="1" fill="#2a2d31"/></svg></button>
+  </div>
+  <p class="pd">Silakan ketik 6 digit PIN kamu buat lanjut.</p>
+  <div class="pf"><div class="dots" id="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="em" id="em"></div>
+  <button class="lp" type="button" data-t="Lupa PIN belum tersedia">Lupa PIN</button>
+  <div class="pw2">Powered by <svg width="15" height="15" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#19a8d6"/><rect x="7.5" y="10" width="19" height="14" rx="3.5" fill="#fff"/><rect x="17.5" y="14.8" width="9" height="4.6" rx="2.3" fill="#19a8d6" stroke="#fff" stroke-width="1.6"/></svg><b>gopay</b></div>
+  <div class="pad" id="pad2"></div>
+</section>
+
+<!-- ANIMASI (GIF) sebelum berhasil -->
+<section class="s" id="anim" aria-hidden="true"></section>
 
 <!-- BERHASIL -->
-<section class="s" id="ok"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="36"/><path d="M26 43l11 11 21-23"/></svg><h2>Pembayaran berhasil</h2><div id="okt"></div><button class="go" id="done" style="margin:30px 15px 0;width:calc(100% - 30px)">Selesai</button></section>
+<section class="s" id="ok" aria-label="Rincian pembayaran">
+  <div id="rc">
+    <div class="hero">
+      <svg class="hbg" viewBox="0 0 360 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0H360V235A500 500 0 0 0 0 235Z" fill="#4127fe"/></svg>
+      <div class="chk"><i class="ring"></i><svg viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="46" fill="#00b049"/><path d="M23 47l17 17 29-34" pathLength="100"/></svg></div>
+    </div>
+    <div class="card">
+      <div class="av2 rv" id="rAv" style="--d:0s"></div>
+      <div class="rp rv" id="rAmt" style="--d:.07s">Rp0</div>
+      <p class="rt rv" id="rTo" style="--d:.13s"></p>
+      <p class="rs rv" id="rLoc" style="--d:.17s"></p>
+      <div class="dv rv" style="--d:.21s"></div>
+      <h3 class="rv" style="--d:.25s">Detail pembayaran</h3>
+      <div class="rw first rv" style="--d:.29s"><span>Status</span><span class="st" id="rSt">Sukses</span></div>
+      <div class="more"><div><div id="rows"></div></div></div>
+      <button class="exp rv" id="exp" type="button" style="--d:.34s"><span>Rincian lengkap</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+    </div>
+    <div class="spc"></div>
+  </div>
+  <div class="tb">
+    <button class="rb" id="cls" type="button" aria-label="Tutup"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    <div>
+      <button class="rb" id="shr" type="button" aria-label="Bagikan"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+      <button class="rb" type="button" data-t="Pusat bantuan" aria-label="Bantuan"><svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="currentColor"/><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="800" fill="#262b2e" font-family="sans-serif">?</text></svg></button>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="bn">Bagi jatah bayar transaksi ini bareng temenmu!</div>
+    <div class="pn"><div class="tl">
+      <div class="c"><button class="tl2" type="button" style="background:#2b484a" data-t="Split - atur jumlah belum tersedia" aria-label="Split - atur jumlah"><img src="assets/qris/ico-split-atur.png" alt="" style="height:29.5px"></button><p>Split - atur jumlah</p></div>
+      <div class="c"><button class="tl2" type="button" style="background:#40484c" data-t="Split - foto struk belum tersedia" aria-label="Split - foto struk"><img src="assets/qris/ico-split-struk.png" alt="" style="height:25px"></button><p>Split - foto struk</p></div>
+      <div class="c"><button class="tl2" type="button" id="shr2" style="background:#2a3c4b" aria-label="Bagi bukti bayar"><img src="assets/qris/ico-bagi.png" alt="" style="height:25px"></button><p>Bagi bukti bayar</p></div>
+    </div></div>
+  </div>
+</section>
 
 <div class="tt" id="tt"></div>
 <input type="file" id="file" accept="image/*" hidden>
@@ -194,6 +334,8 @@ svg,img{display:block}
 var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
 var M=null,amt='',scanOn=false,stream=null,det=null,busy=false,pin='',timers=[];
 var ST=['scan','nom','rev'],cur='scan';
+var GIF='assets/qris/bayar-berhasil.gif',ANIM_MS=1600,HOLD_MS=300;
+new Image().src=GIF; /* preload supaya animasi langsung jalan */
 function rp(n){return 'Rp'+Number(n||0).toLocaleString('id-ID')}
 function toast(t){var e=$('#tt');e.textContent=t;e.classList.add('on');clearTimeout(toast.k);toast.k=setTimeout(function(){e.classList.remove('on')},2000)}
 function later(f,ms){timers.push(setTimeout(f,ms))}
@@ -246,14 +388,82 @@ function dots(){$$('#dots i').forEach(function(d,i){d.classList.toggle('f',i<pin
 function closePin(){$('#pin').classList.remove('on');pin='';dots();$('#em').textContent=''}
 pad($('#pad2'),function(v){if(busy)return;if(v==='b')pin=pin.slice(0,-1);else if(pin.length<6)pin+=v;dots();$('#em').textContent='';if(pin.length===6)kirim()},false);
 $('#bayar').onclick=function(){pin='';dots();$('#pin').classList.add('on')};
-$('#pin').onclick=function(e){if(e.target===this&&!busy)closePin()};
+$('#pinx').onclick=function(){if(!busy)closePin()};
 function kirim(){busy=true;var c=window.GP_CFG||{};
   fetch(c.url+'/rest/v1/rpc/input_gcx',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json'},
     body:JSON.stringify({pin:pin,p_jumlah:+amt,p_acquirer_name:M.acq||null,p_merchant_name:M.name,p_merchant_location:loc(M),p_merchant_pan:M.pan||null,p_terminal_id:M.term||null})})
   .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j&&(j.message||j.hint)||'Gagal');return j})})
-  .then(function(){busy=false;closePin();$('#okt').textContent=rp(amt)+' ke '+M.name;history.replaceState({s:'ok'},'');show('ok')})
+  .then(function(j){busy=false;closePin();var r=baris(j);try{isi(r)}catch(x){console.error(x)}history.replaceState({s:'ok'},'');animasi(buka)})
   .catch(function(e){busy=false;pin='';dots();var d=$('#dots');d.classList.remove('err');void d.offsetWidth;d.classList.add('err');$('#em').textContent=e.message||'PIN salah atau jaringan bermasalah'})}
-$('#done').onclick=function(){location.href='index.html'};
+$('#cls').onclick=function(){location.href='index.html'};
+
+/* ---- animasi GIF (sekali putar) lalu popup rincian naik dari bawah ---- */
+var REDUCE=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+function animasi(done){
+  if(REDUCE){done();return}
+  var box=$('#anim'),im=new Image(),fin=false;
+  function go(){if(fin)return;fin=true;if(cur==='anim')done()}
+  box.classList.remove('away');box.textContent='';im.alt='';
+  im.onload=function(){if(cur!=='anim')return;box.appendChild(im);setTimeout(go,ANIM_MS+HOLD_MS)};
+  im.onerror=go;
+  show('anim');im.src=GIF}
+function buka(){var a=$('#anim'),e=$('#ok');
+  if(REDUCE||!a.classList.contains('on')){show('ok');hitung($('#rAmt'),AMT,0,0);return}
+  cur='ok';e.classList.add('on');a.classList.add('away');hitung($('#rAmt'),AMT,900,520);
+  setTimeout(function(){if(cur!=='ok')return;a.classList.remove('on','away');a.textContent=''},1150)}
+
+/* ---- rincian akhir: diisi dari baris public.gcx yang dikembalikan RPC input_gcx ---- */
+var LAST=null,AMT=0,BLN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+var GPI='<svg width="16" height="16" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="17" fill="#19a8d6"/><rect x="8" y="10.5" width="18" height="13" rx="3.2" fill="#fff"/><rect x="17" y="14.8" width="9.5" height="4.6" rx="2.3" fill="#19a8d6" stroke="#fff" stroke-width="1.5"/></svg>';
+var CPI='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="10.5" height="10.5" rx="3" fill="currentColor"/><path d="M1.5 10.5V4.5a3 3 0 013-3h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".7"/></svg>';
+function baris(j){var r=Array.isArray(j)?j[0]:j;if(r&&typeof r==='object'&&r.input_gcx)r=r.input_gcx;return r&&typeof r==='object'?r:{}}
+function jam12(t){var m=/^(\d{1,2}):(\d{2})/.exec(t||'');if(!m)return t||'-';var h=+m[1];return ('0'+(h%12||12)).slice(-2)+':'+m[2]+' '+(h>=12?'PM':'AM')}
+function tgl(d){var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(d||'');return m?(+m[3])+' '+BLN[+m[2]-1]+' '+m[1]:(d||'-')}
+function lokasi(s){var p=String(s||'').split(',').map(function(x){return x.trim()}).filter(Boolean),city=p[0]||'',pos=p.length>1&&/^\d{4,6}$/.test(p[p.length-1])?p[p.length-1]:'';return{city:city,sub:[city,pos].filter(Boolean).join(', ')}}
+function rw(label,val,o){o=o||{};var d=document.createElement('div'),l=document.createElement('span'),v=document.createElement('span'),t=document.createElement('span');
+  d.className='rw'+(o.b?' b':'')+(o.pay?' pay':'');l.textContent=label;v.className='v';t.className='t';t.textContent=val;v.appendChild(t);
+  if(o.gp){var g=document.createElement('span');g.style.display='flex';g.innerHTML=GPI;v.appendChild(g)}
+  if(o.copy){var c=document.createElement('button');c.type='button';c.className='cp';c.innerHTML=CPI;c.setAttribute('aria-label','Salin '+label);c.onclick=function(){salin(o.copy,label+' disalin')};v.appendChild(c)}
+  d.appendChild(l);d.appendChild(v);return d}
+function isi(r){LAST=r;var e=$('#ok'),box=$('#rows'),nm=r.merchant_name||(M&&M.name)||'Merchant',L=lokasi(r.merchant_location),
+    jml=+r.jumlah||+amt||0,tot=+r.total||jml,met=String(r.metode_pembayaran||'GoPay Saldo').replace(/\s+Saldo$/i,''),
+    sukses=/^(selesai|sukses|berhasil)$/i.test(r.status||'');
+  AMT=tot;e.classList.remove('open');$('#exp span').textContent='Rincian lengkap';$('#rc').scrollTop=0;
+  $('#rAv').textContent=nm.split(/\s+/).filter(Boolean).slice(0,2).map(function(w){return w[0]}).join('').toUpperCase();
+  $('#rAmt').textContent=rp(tot);
+  $('#rTo').textContent='Berhasil bayar ke '+nm+(r.acquirer_name?' - '+r.acquirer_name:'');
+  $('#rLoc').textContent=L.sub;$('#rLoc').style.display=L.sub?'':'none';
+  var st=$('#rSt');st.textContent=sukses?'Sukses':(r.status||'-');st.className='st'+(sukses?'':' bad');
+  box.textContent='';
+  function add(x){box.appendChild(x)}function dd(){var x=document.createElement('div');x.className='dd';box.appendChild(x)}
+  add(rw('Metode pembayaran',met,{gp:/gopay/i.test(met)}));
+  add(rw('Waktu',jam12(r.waktu)));
+  add(rw('Tanggal',tgl(r.tanggal)));
+  add(rw('ID Transaksi',r.id_transaksi||'-',{copy:r.id_transaksi}));
+  dd();
+  if(r.acquirer_name)add(rw('Nama acquirer',r.acquirer_name));
+  add(rw('Nama merchant',nm));
+  if(L.city)add(rw('Lokasi merchant',L.city));
+  if(r.merchant_pan)add(rw('Merchant PAN',r.merchant_pan,{copy:r.merchant_pan}));
+  if(r.terminal_id)add(rw('Terminal ID',r.terminal_id));
+  if(r.qris_rrn)add(rw('QRIS RRN',r.qris_rrn,{copy:r.qris_rrn}));
+  if(r.customer_pan)add(rw('Customer PAN',r.customer_pan,{copy:r.customer_pan}));
+  dd();add(rw('Jumlah tagihan',rp(jml)));
+  dd();add(rw('Total',rp(tot),{b:1}));
+  add(rw('Dibayar pakai '+met,rp(tot),{pay:1}))}
+function hitung(el,to,ms,delay){if(!ms||REDUCE){el.textContent=rp(to);return}
+  el.textContent=rp(0);var t0=null;
+  setTimeout(function(){requestAnimationFrame(function f(t){if(t0===null)t0=t;var k=Math.min(1,(t-t0)/ms);el.textContent=rp(Math.round(to*(1-Math.pow(1-k,3))));if(k<1)requestAnimationFrame(f)})},delay||0)}
+function salin(t,msg){function ok(){toast(msg)}
+  function fb(){var a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();try{document.execCommand('copy');ok()}catch(_){toast('Gagal menyalin')}a.remove()}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,fb);else fb()}
+function bagi(){var r=LAST||{},teks='Berhasil bayar '+rp(AMT)+' ke '+(r.merchant_name||'merchant')+(r.id_transaksi?'\nID Transaksi: '+r.id_transaksi:'');
+  if(navigator.share)navigator.share({title:'Bukti bayar QRIS',text:teks}).catch(function(){});else salin(teks,'Bukti bayar disalin')}
+$('#shr').onclick=bagi;$('#shr2').onclick=bagi;
+$('#exp').onclick=function(){var e=$('#ok'),sc=$('#rc'),open=!e.classList.contains('open');
+  e.classList.toggle('open',open);$('#exp span').textContent=open?'Tutup':'Rincian lengkap';
+  if(open){var t0=Date.now();(function f(){sc.scrollTop=sc.scrollHeight;if(Date.now()-t0<620)requestAnimationFrame(f)})()}
+  else sc.scrollTo({top:0,behavior:'smooth'})};
 
 /* ---- kamera + unggah QR ---- */
 function jsqr(cb){if(window.jsQR)return cb();var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js';s.onload=cb;document.head.appendChild(s)}
