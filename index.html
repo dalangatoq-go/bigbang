@@ -1787,11 +1787,24 @@ $('#sw').addEventListener('click',function(){var l=document.body.classList.toggl
 <script src="js/notif.js"></script>
 <script>
 /* Tombol QRIS di bar bawah -> alur scan QRIS (qris.html) */
-(function(){var b=document.querySelector('#gp-nav .qr');if(!b)return;var busy=false;
-  b.setAttribute('aria-label','Scan QRIS');
-  b.addEventListener('click',function(e){e.preventDefault();if(busy)return;busy=true;var u='qris.html';   /* cegah dobel tap */
-    if(window.GPL&&GPL.go)GPL.go(u);else location.href=u;
-    setTimeout(function(){busy=false},2500)});
+(function(){var busy=false,U='qris.html';
+  var b0=document.querySelector('#gp-nav .qr');if(b0)b0.setAttribute('aria-label','Scan QRIS');
+  function toast(t){var d=document.createElement('div');d.setAttribute('role','alert');d.textContent=t;
+    d.style.cssText='position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:max-content;max-width:300px;background:#1f2327;color:#fff;font:600 12.5px/1.4 Inter,system-ui,sans-serif;padding:10px 14px;border-radius:14px;z-index:2147483000;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.4)';
+    document.body.appendChild(d);setTimeout(function(){d.remove()},4000)}
+  function go(){
+    if(window.GPL&&GPL.go)GPL.go(U);else location.href=U;
+    setTimeout(function(){if(!document.hidden)location.assign(U)},2500);   /* cadangan bila navigasi pertama tertelan */
+    setTimeout(function(){busy=false},4000)}
+  function buka(){
+    if(busy)return;busy=true;
+    if(/^https?:$/.test(location.protocol)&&window.fetch){
+      fetch(U,{method:'HEAD',cache:'no-store'}).then(function(r){
+        if(r.ok)go();else{busy=false;toast('qris.html tidak ditemukan. Taruh di folder yang sama dengan index.html.')}
+      }).catch(function(){go()})}
+    else go()}
+  /* fase capture di window: tetap jalan walau ada skrip lain yang menghentikan propagasi klik di bar bawah */
+  addEventListener('click',function(e){var t=e.target&&e.target.closest?e.target.closest('#gp-nav .qr'):null;if(!t)return;e.preventDefault();buka()},true);
   /* kembali dari alur QRIS (bfcache): tombol aktif lagi & saldo/riwayat disegarkan */
   addEventListener('pageshow',function(e){busy=false;if(e.persisted&&window.GP&&GP.sync){try{GP.sync()}catch(_){}}})})();
 /* Tombol "?" di pojok kanan atas Beranda -> halaman Bantuan (bantuan.html) */
