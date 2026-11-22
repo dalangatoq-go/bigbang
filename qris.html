@@ -361,6 +361,12 @@ svg,img{display:block}
 var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
 var M=null,amt='',scanOn=false,stream=null,det=null,busy=false,pin='',timers=[];
 var ST=['scan','nom','rev'],cur='scan';
+try{sessionStorage.removeItem('gp_loader')}catch(_){} /* flag loader dari Beranda (GPL.go) sudah terpakai: bersihkan agar tidak muncul lagi saat kembali */
+/* ---- keluar dari alur QRIS -> kembali ke Beranda tanpa menumpuk riwayat ---- */
+var DEPTH=0,OKDONE=false,FROM_INDEX=(function(){try{var r=new URL(document.referrer);return r.origin===location.origin&&/\/(index\.html)?$/.test(r.pathname)}catch(_){return false}})();
+function keluar(){
+  if(FROM_INDEX){history.go(-(DEPTH+1));setTimeout(function(){location.replace('index.html')},1500)} /* pengaman bila history.go tidak berpindah */
+  else location.replace('index.html')}
 var GIF='assets/qris/bayar-berhasil.gif?v=4',ANIM_MS=2200,HOLD_MS=350,GBLOB=null,GDUR=0;
 /* Preload sebagai blob: tiap diputar dapat URL baru, jadi GIF SELALU mulai dari frame 1
    (sebelumnya GIF yang sama di cache bisa sudah berjalan / looping -> terlihat 2x). */
@@ -376,10 +382,15 @@ function show(n,back){var pv=cur,pe=$('#'+pv);cur=n;$$('.s').forEach(function(s)
   clearTimeout(show.k);if(pe&&pe!==e&&ST.indexOf(pv)>-1&&ST.indexOf(n)>-1&&!REDUCE){pe.classList.add('lv');if(back)pe.classList.add('back');show.k=setTimeout(function(){pe.classList.remove('lv','back')},340)}
   if(n==='scan')camStart();else camStop();
   if(n==='rev')review();else{clr();setTimeout(function(){if(cur!=='rev')$('#rev').classList.remove('ok')},340)}}
-function push(n){history.pushState({s:n},'');show(n)}
-addEventListener('popstate',function(e){if($('#ld').classList.contains('on')){history.pushState({s:'rev'},'');return}var s=e.state&&e.state.s||'scan';if($('#pin').classList.contains('on')){closePin();history.pushState({s:'rev'},'');return}show(s,true)});
-history.replaceState({s:'scan'},'');
-document.addEventListener('click',function(e){var x=e.target.closest('[data-x]');if(x){if(cur==='scan')location.href='index.html';else history.back();return}
+function push(n){DEPTH++;history.pushState({s:n,d:DEPTH},'');show(n)}
+addEventListener('popstate',function(e){var st=e.state||{},pd=DEPTH;DEPTH=st.d||0;
+  if($('#ld').classList.contains('on')){DEPTH=pd;history.pushState({s:'rev',d:pd},'');return}
+  if(OKDONE){keluar();return} /* tombol back di layar sukses -> Beranda, bukan kembali ke review */
+  var s=st.s||'scan';
+  if($('#pin').classList.contains('on')){closePin();DEPTH=pd;history.pushState({s:'rev',d:pd},'');return}
+  show(s,true)});
+history.replaceState({s:'scan',d:0},'');
+document.addEventListener('click',function(e){var x=e.target.closest('[data-x]');if(x){if(cur==='scan')keluar();else history.back();return}
   var t=e.target.closest('[data-t]');if(t)toast(t.getAttribute('data-t'))});
 
 /* ---- parser QRIS (EMV TLV) ---- */
@@ -427,9 +438,9 @@ function kirim(){busy=true;var c=window.GP_CFG||{},t0=Date.now();ldShow();
   fetch(c.url+'/rest/v1/rpc/input_gcx',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json'},
     body:JSON.stringify({pin:pin,p_jumlah:+amt,p_acquirer_name:M.acq||null,p_merchant_name:M.name,p_merchant_location:loc(M),p_merchant_pan:M.pan||null,p_terminal_id:M.term||null})})
   .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j&&(j.message||j.hint)||'Gagal');return j})})
-  .then(function(j){setTimeout(function(){busy=false;closePin();$('#pin').classList.remove('hid');var r=baris(j);try{isi(r)}catch(x){console.error(x)}history.replaceState({s:'ok'},'');animasi(buka);setTimeout(ldHide,120)},Math.max(0,LD_MIN-(Date.now()-t0)))})
+  .then(function(j){setTimeout(function(){busy=false;closePin();$('#pin').classList.remove('hid');var r=baris(j);try{isi(r)}catch(x){console.error(x)}OKDONE=true;history.replaceState({s:'ok',d:DEPTH},'');animasi(buka);setTimeout(ldHide,120)},Math.max(0,LD_MIN-(Date.now()-t0)))})
   .catch(function(e){busy=false;pin='';dots();ldHide();$('#pin').classList.remove('hid');var d=$('#dots');d.classList.remove('err');void d.offsetWidth;d.classList.add('err');$('#em').textContent=e.message||'PIN salah atau jaringan bermasalah'})}
-$('#cls').onclick=function(){location.href='index.html'};
+$('#cls').onclick=keluar;
 
 /* ---- animasi GIF (sekali putar) lalu popup rincian naik dari bawah ---- */
 var REDUCE=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
