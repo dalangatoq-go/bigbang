@@ -1787,8 +1787,13 @@ $('#sw').addEventListener('click',function(){var l=document.body.classList.toggl
 <script src="js/notif.js"></script>
 <script>
 /* Tombol QRIS di bar bawah -> alur scan QRIS (qris.html) */
-(function(){var b=document.querySelector('#gp-nav .qr');if(!b)return;
-  b.addEventListener('click',function(){var u='qris.html';if(window.GPL&&GPL.go)GPL.go(u);else location.href=u})})();
+(function(){var b=document.querySelector('#gp-nav .qr');if(!b)return;var busy=false;
+  b.setAttribute('aria-label','Scan QRIS');
+  b.addEventListener('click',function(e){e.preventDefault();if(busy)return;busy=true;var u='qris.html';   /* cegah dobel tap */
+    if(window.GPL&&GPL.go)GPL.go(u);else location.href=u;
+    setTimeout(function(){busy=false},2500)});
+  /* kembali dari alur QRIS (bfcache): tombol aktif lagi & saldo/riwayat disegarkan */
+  addEventListener('pageshow',function(e){busy=false;if(e.persisted&&window.GP&&GP.sync){try{GP.sync()}catch(_){}}})})();
 /* Tombol "?" di pojok kanan atas Beranda -> halaman Bantuan (bantuan.html) */
 (function(){var b=document.querySelector('.hdr .help');if(!b)return;
   b.addEventListener('click',function(){var u='bantuan.html';if(window.GPL&&GPL.go)GPL.go(u);else location.href=u})})();
