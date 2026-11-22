@@ -15,9 +15,9 @@
    Tidak ada nomor versi yang perlu dinaikkan. Bila suatu saat ingin menghapus
    semua cache paksa, ganti CACHE saja.
    ========================================================================== */
-var CACHE = 'app-runtime-11';
+var CACHE = 'app-runtime-13';
 var GAMBAR = [];   // dibuat otomatis dari assets/img (lihat README)
-var CORE = ['./', './index.html', './akun.html', './masuk.html', './onboarding.html', './pin.html', './qris.html', './offline.html',
+var CORE = ['./', './index.html', './akun.html', './masuk.html', './onboarding.html', './pin.html', './qris.html', './bantuan.html', './offline.html',
             './manifest.webmanifest', './update.js', './js/install.js', './css/install.css', './push.js', './js/notif.js', './js/config.js', './mynotification.mp3',
             './icons/icon-192.png', './icons/icon-512.png', './icons/badge-96.png', './icons/apple-touch-icon.png',
             './assets/fonts/DMSansEmb.woff', './assets/fonts/BitterEmb.woff', './assets/qris/alfamart.png', './assets/qris/qris-logo.png', './assets/qris/ico-tap.png', './assets/qris/ico-upload.png', './assets/qris/ico-promo.png'];   // shell inti; gambar dihangatkan setelah tampilan pertama siap

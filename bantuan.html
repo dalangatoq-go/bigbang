@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141619">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Bantuan</title>
+<style>
+@font-face{font-family:"DM Sans Emb";src:url(assets/fonts/DMSansEmb.woff) format("woff");font-weight:400 700;font-display:swap}
+:root{--bg:#141619;--card:#25292e;--tx:#fff;--sub:#a9aeb5;--line:#14161a;--b1:#00aad6;--b2:#007fc9;--g:#1fb83f}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--tx);font-family:"DM Sans Emb","Plus Jakarta Sans","Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-weight:600}
+#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
+.scr{display:none;min-height:100vh;padding-bottom:40px}.scr.on{display:block}
+.bar{position:sticky;top:0;z-index:5;height:0}
+.bar .in{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;padding:15px 15px 0;pointer-events:none}
+.bar button{pointer-events:auto}
+.circ{width:38px;height:38px;border-radius:50%;background:#25292e;border:0;display:grid;place-items:center;color:#c8ccd2;cursor:pointer}
+.pill{height:34px;border-radius:17px;padding:0 10px 0 8px;display:flex;align-items:center;gap:6px;border:1px solid #3a3f45;background:linear-gradient(#4a4e53,#25292d);color:#fff;font:700 15px inherit;font-family:inherit;cursor:pointer}
+.hero{background:linear-gradient(180deg,#00acd8,#007fc8);padding:94px 15px 0;border-radius:0 0 50% 50%/0 0 14px 14px;position:relative;overflow:hidden;padding-bottom:26px}
+.hero:before,.hero:after{content:"";position:absolute;border:1px solid rgba(255,255,255,.22);border-radius:50%;width:300px;height:300px;right:-90px;top:-170px}
+.hero:after{width:400px;height:400px;right:-140px;top:-230px}
+.hero h1{font:700 21px Georgia,"Times New Roman",serif;text-align:center;margin:0 0 15px;position:relative;letter-spacing:-.2px}
+.sug{background:#25292e;border-radius:16px;position:relative}
+.sug button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;padding:12px 14px 12px 22px;min-height:53px;cursor:pointer;position:relative}
+.sug button+button:before{content:"";position:absolute;left:22px;right:0;top:0;border-top:1px solid #14161a}
+.sug .t{flex:1;font-size:15px;line-height:19px}.sug small{display:block;color:#a9aeb5;font-weight:500;font-size:13px;margin-top:2px}
+.chev{color:#b5b9bf;flex:none}
+.sec{display:flex;justify-content:space-between;align-items:center;padding:0 15px;margin:30px 0 18px}
+.sec h2{font-size:17px;font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 15px}
+.tile{all:unset;box-sizing:border-box;background:#25292e;border-radius:14px;min-height:76px;padding:10px 18px;display:flex;align-items:center;gap:12px;font-size:15px;line-height:19px;font-weight:700;cursor:pointer}
+.tile:active,.row:active,.sug button:active{filter:brightness(1.25)}
+.tile svg{flex:none}
+a.help{color:inherit;text-decoration:none}.help{margin:25px 15px 0;background:#25292e;border-radius:16px;padding:16px 15px 16px 15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.help b{font-size:17px;display:block;margin-bottom:4px;font-weight:700}.help span{color:#a9aeb5;font-weight:500;font-size:14px}
+.ph{width:37px;height:37px;border-radius:50%;border:1px solid #118a22;background:#0f2a14;display:grid;place-items:center}
+.top{padding:70px 15px 10px}.top h1{font-size:22px;font-weight:700;line-height:28px}
+.list{padding:8px 15px}.row{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#25292e;border-radius:14px;padding:16px;margin-bottom:8px;font-size:15px;line-height:20px;cursor:pointer}
+.art{padding:70px 20px 20px}.art h1{font-size:21px;line-height:27px;font-weight:700;margin-bottom:14px}
+.art p,.art li{color:#d3d6da;font-weight:500;font-size:15px;line-height:23px;margin-bottom:10px}.art ol{padding-left:20px}
+.fb{margin:22px 15px 0;background:#25292e;border-radius:16px;padding:16px;text-align:center}
+.fb div{display:flex;gap:8px;margin-top:12px}.fb button{flex:1;height:40px;border-radius:20px;border:1px solid #3a3f45;background:none;color:#fff;font:700 14px inherit;font-family:inherit;cursor:pointer}
+.fb button.sel{background:#0b2f17;border-color:var(--g)}
+.srch{display:flex;align-items:center;gap:10px;margin:0 15px 12px;background:#25292e;border-radius:24px;padding:0 16px;height:46px}
+.srch input{flex:1;background:none;border:0;outline:0;color:#fff;font:600 15px inherit;font-family:inherit}
+.empty{text-align:center;color:#a9aeb5;font-weight:500;padding:60px 30px;line-height:22px}
+.empty .ic{width:64px;height:64px;border-radius:50%;background:#25292e;display:grid;place-items:center;margin:0 auto 16px}
+.btn{height:46px;padding:0 26px;border-radius:23px;border:0;background:#00aa13;color:#fff;font:700 15px inherit;font-family:inherit;cursor:pointer;margin-top:18px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:20}.ov.on{display:flex}
+.shl{width:100%;max-width:480px;background:#1c1f23;border-radius:22px 22px 0 0;padding:12px 15px 26px;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.shl i{display:block;width:40px;height:4px;border-radius:2px;background:#444;margin:0 auto 16px}
+.shl h3{font-size:18px;font-weight:700;margin-bottom:6px}.shl p{color:#a9aeb5;font-weight:500;font-size:14px;line-height:20px;margin-bottom:14px}
+.shl .row{margin-bottom:8px}.shl textarea{width:100%;height:90px;background:#25292e;border:1px solid #333;border-radius:12px;color:#fff;font:500 15px inherit;font-family:inherit;padding:12px;resize:none;outline:0}
+.err{color:#ff6b6b;font-size:13px;font-weight:500;min-height:18px;margin:6px 0}
+.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);background:#e9ecef;color:#111;padding:12px 18px;border-radius:12px;font-size:14px;z-index:30;opacity:0;transition:.2s;pointer-events:none;max-width:90%}.toast.on{opacity:1}
+.ld{display:flex;justify-content:center;padding:50px}.ld i{width:28px;height:28px;border-radius:50%;border:3px solid #333;border-top-color:#00aa13;animation:s .7s linear infinite}@keyframes s{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+</style></head><body><div id="app">
+
+<section class="scr on" id="home">
+ <div class="bar"><div class="in"><button class="circ" data-back aria-label="Kembali"></button><button class="pill" data-go="reports"><span data-ic="rep"></span>Laporan saya</button></div></div>
+ <div class="hero"><h1>Apa yang bisa kami bantu?</h1>
+  <div class="sug" id="sug"></div></div>
+ <div class="sec"><h2>Semua topik</h2><button class="pill" data-go="search" style="padding:0 14px 0 12px"><span data-ic="srch"></span>Pencarian</button></div>
+ <div class="grid" id="grid"></div>
+ <a class="help" href="tel:1500729" aria-label="Telepon 1500729" ><div><b>Butuh bantuan lain?</b><span>Silakan hubungi kami kapan aja</span></div><div class="ph"><svg width="20" height="20" viewBox="0 0 24 24" fill="#12b32a"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2a1 1 0 011-.25 11.4 11.4 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.6a1 1 0 01-.25 1z"/></svg></div></a>
+</section>
+
+<section class="scr" id="topic"><div class="bar"><div class="in"><button class="circ" data-back></button><button class="pill" data-go="reports"><span data-ic="rep"></span>Laporan saya</button></div></div>
+ <div class="top"><h1 id="tt"></h1></div><div class="list" id="tl"></div>
+ <a class="help" href="tel:1500729" aria-label="Telepon 1500729" style="margin-top:20px"><div><b>Butuh bantuan lain?</b><span>Silakan hubungi kami kapan aja</span></div><div class="ph"><svg width="20" height="20" viewBox="0 0 24 24" fill="#12b32a"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2a1 1 0 011-.25 11.4 11.4 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.6a1 1 0 01-.25 1z"/></svg></div></a></section>
+
+<section class="scr" id="article"><div class="bar"><div class="in"><button class="circ" data-back></button><span></span></div></div>
+ <div class="art" id="ab"></div>
+ <div class="fb"><b style="font-weight:700">Apakah jawaban ini membantu?</b><div><button data-fb="y">Ya</button><button data-fb="n">Tidak</button></div></div></section>
+
+<section class="scr" id="search"><div class="bar"><div class="in"><button class="circ" data-back></button><span></span></div></div>
+ <div style="height:70px"></div><div class="srch"><span data-ic="srch"></span><input id="q" placeholder="Cari bantuan" autocomplete="off"></div><div class="list" id="sl"></div></section>
+
+<section class="scr" id="reports"><div class="bar"><div class="in"><button class="circ" data-back></button><span></span></div></div>
+ <div class="top"><h1>Laporan saya</h1></div>
+ <div class="empty" id="rp"><div class="ic"><span data-ic="rep"></span></div>Belum ada laporan.<br>Laporan yang kamu buat akan muncul di sini.<br><button class="btn" data-sheet="contact">Buat laporan</button></div></section>
+
+<section class="scr" id="loading"><div class="bar"><div class="in"><button class="circ" data-back></button><span></span></div></div><div style="height:70px"></div><div class="ld"><i></i></div></section>
+</div>
+
+<div class="ov" id="contact"><div class="shl"><i></i><h3>Hubungi kami</h3><p>Pilih cara yang paling nyaman untuk kamu.</p>
+ <button class="row" data-open="call"><span>Telepon layanan pelanggan</span><span class="chev" data-ic="chev"></span></button>
+ <button class="row" data-open="msg"><span>Tulis masalah kamu</span><span class="chev" data-ic="chev"></span></button>
+ <button class="row" data-close style="justify-content:center;background:none;border:1px solid #3a3f45">Tutup</button></div></div>
+<div class="ov" id="call"><div class="shl"><i></i><h3>Telepon layanan pelanggan</h3><p>Tim kami siap membantu kapan aja. Pastikan kamu siap menyebutkan nomor HP yang terdaftar.</p>
+ <a class="btn" href="tel:1500729" id="docall" style="display:grid;place-items:center;text-decoration:none;width:100%;margin:0 0 8px">Telepon sekarang</a><button class="row" data-close style="justify-content:center;background:none;border:1px solid #3a3f45;margin:0">Batal</button></div></div>
+<div class="ov" id="msg"><div class="shl"><i></i><h3>Tulis masalah kamu</h3><p>Ceritakan masalahnya, kami akan membalas lewat laporan kamu.</p>
+ <textarea id="mt" placeholder="Jelaskan masalah kamu"></textarea><div class="err" id="me"></div>
+ <button class="btn" style="width:100%;margin:0 0 8px" id="send">Kirim laporan</button><button class="row" data-close style="justify-content:center;background:none;border:1px solid #3a3f45;margin:0">Batal</button></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const I={
+chev:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+back:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11 5l-7 7 7 7"/></svg>',
+srch:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b5b9bf" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
+rep:'<svg width="22" height="22" viewBox="0 0 24 24"><path d="M3 4a2 2 0 012-2h11a2 2 0 012 2v6.1A6 6 0 0010 18H5a2 2 0 01-2-2z" fill="#b5b9bf"/><text x="9.5" y="12" font-size="10" font-weight="800" fill="#2b2f34" text-anchor="middle">?</text><circle cx="17" cy="17" r="5.5" fill="#25292e" stroke="#b5b9bf" stroke-width="1.6"/><path d="M17 14v3.2l2 1.2" stroke="#b5b9bf" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>',
+spark:'<svg width="48" height="48" viewBox="0 0 48 48"><path d="M20 12c1.5 8 4 10.5 12 12-8 1.5-10.5 4-12 12-1.5-8-4-10.5-12-12 8-1.5 10.5-4 12-12z" fill="#22b83c"/><path d="M34 4c.8 4 2 5.2 6 6-4 .8-5.200 2-6 6-.8-4-2-5.2-6-6 4-.8 5.2-2 6-6z" fill="#22b83c"/></svg>',
+head:'<svg width="30" height="30" viewBox="0 0 30 30"><path d="M7 16v-2a8 8 0 0116 0v2" fill="none" stroke="#2f7cf6" stroke-width="3" stroke-linecap="round"/><rect x="4" y="14" width="5" height="8" rx="2.5" fill="#7a5af8"/><rect x="21" y="14" width="5" height="8" rx="2.5" fill="#2f7cf6"/><circle cx="14" cy="24" r="1.6" fill="#2fc1ff"/></svg>',
+tx:'<svg width="34" height="34" viewBox="0 0 34 34"><path d="M7 3h20v28l-3.3-2-3.3 2-3.4-2-3.4 2-3.3-2L7 31z" fill="#19f0d8"/><path d="M11 10h12M11 15h12M11 20h7" stroke="#15b3d5" stroke-width="2.4" stroke-linecap="round"/></svg>',
+gear:'<svg width="34" height="34" viewBox="0 0 34 34"><path d="M17 3l3 3 4.2-.8 1.2 4.1 4 1.6-1.1 4.1L31 17l-3.7 2.4 1 4.2-4 1.5-1.500 4-4.300-.9L17 31l-3-3-4.200.8-1.200-4.100-4-1.600 1.100-4.100L3 17l3.700-2.400-1-4.200 4-1.500 1.500-4 4.300.9z" fill="#f79009"/><circle cx="17" cy="17" r="6" fill="#fff0d6"/><circle cx="17" cy="17" r="3.200" fill="#d92d20"/></svg>',
+gp:'<svg width="34" height="22" viewBox="0 0 34 22"><path d="M3 6a4 4 0 014-4h13v4h4v10a4 4 0 01-4 4H7a4 4 0 01-4-4z" fill="#00a8d6"/><circle cx="19" cy="13" r="1.600" fill="#0b2a33"/><path d="M28 4v10M23 9h10" stroke="#00a8d6" stroke-width="3" stroke-linecap="round" transform="translate(-1 0) scale(.9) translate(3 0)"/></svg>',
+shield:'<svg width="34" height="38" viewBox="0 0 34 38"><path d="M17 2l13 4.500V18c0 8-5.500 14.500-13 18C9.500 32.500 4 26 4 18V6.500z" fill="#12b76a"/><path d="M10.500 18l5 5 8.500-9.500" stroke="#fff" stroke-width="3.600" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+card:'<svg width="36" height="34" viewBox="0 0 36 34"><rect x="2" y="16" width="26" height="15" rx="3" fill="#f79009"/><rect x="4" y="8" width="28" height="17" rx="3" fill="#7a5af8"/><rect x="6" y="14" width="24" height="12" rx="2.500" fill="#2e90fa"/><rect x="4" y="9" width="28" height="4" fill="#5d3df0"/><rect x="9" y="19" width="10" height="3" rx="1.500" fill="#b2ddff"/></svg>',
+promo:'<svg width="34" height="34" viewBox="0 0 34 34"><path d="M17 1l4 3.500 5.200-.8 1.500 5 5 1.500-.8 5.200L35 20.500 31 24l.8 5.200-5 1.500-1.500 5L20 35.500 17 33 14 35.500l-4.300-4.800-5-1.500.8-5.200L3 20.500l3.500-3.500-.8-5.200 5-1.500 1.500-5L17 4z" transform="scale(.9) translate(1.500 -1)" fill="#e8001c"/><path d="M11 22l12-11" stroke="#fff" stroke-width="3" stroke-linecap="round" transform="translate(0 1)"/><circle cx="12" cy="13" r="2.300" fill="#fff"/><circle cx="22" cy="21" r="2.300" fill="#fff"/></svg>',
+loan:'<svg width="38" height="34" viewBox="0 0 38 34"><rect x="12" y="2" width="18" height="11" rx="2" fill="#12b76a" transform="rotate(-8 21 7)"/><circle cx="21" cy="7.500" r="3" fill="#a6f4c5" transform="rotate(-8 21 7)"/><path d="M3 22l8-3 10 2 9-5c2-1 4 1 2.500 3L24 29l-12 3-9-3z" fill="#f4a27a"/><path d="M3 21l-1 9 4 1 1-9z" fill="#e8553d"/></svg>',
+ins:'<svg width="36" height="36" viewBox="0 0 36 36"><path d="M18 3l13 4.500V19c0 8-5.500 14.500-13 17.500C10.500 33.500 5 27 5 19V7.500z" fill="#00a8d6"/><path d="M11.500 18.500l5 5 8-9" stroke="#fff" stroke-width="3.400" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
+const T=[
+["tx","Transaksi",["Transaksi gagal tapi saldo terpotong","Cara cek status transaksi","Cara bayar dengan QRIS","Pembayaran tagihan belum berhasil"]],
+["gear","Seputar akun & aplikasi",["Lupa PIN GoPay","Cara mengganti nomor HP","Aplikasi tidak bisa dibuka","Cara menutup akun"]],
+["gp","GoPay Plus",["Apa itu GoPay Plus","Cara upgrade ke GoPay Plus","Batas saldo dan transaksi"]],
+["shield","Penipuan & Perlindungan keamanan",["Cara mengenali penipuan","Akun saya diambil alih","Melaporkan transaksi mencurigakan","Jangan bagikan OTP dan PIN"]],
+["card","Metode bayar & Rekapan",["Cara menambah metode pembayaran","Cara melihat riwayat transaksi","Cara mengunduh rekapan"]],
+["promo","Promo",["Voucher tidak bisa dipakai","Cara menukar promo","Syarat dan ketentuan promo"]],
+["gp","Tentang GoPay",["Apa itu GoPay","Cara isi saldo GoPay","Biaya layanan GoPay"]],
+["loan","Pinjaman",["Cara mengajukan pinjaman","Cara membayar tagihan pinjaman","Perubahan tanggal jatuh tempo"]],
+["ins","GoPay Asuransi",["Apa itu GoPay Asuransi","Cara mengajukan klaim","Cara berhenti berlangganan"]]];
+const S=[["GoPay tidak dapat digunakan di beberapa transaksi",0],["Transfer/Top-up GoPay ke No HP yang salah",0],["Kendala transaksi di toko offline",0]];
+const ART={
+"GoPay tidak dapat digunakan di beberapa transaksi":["Pastikan saldo cukup, aplikasi sudah versi terbaru, dan koneksi internet stabil.","Beberapa merchant belum menerima GoPay. Coba metode pembayaran lain atau ulangi beberapa menit lagi."],
+"Transfer/Top-up GoPay ke No HP yang salah":["Segera laporkan agar kami bisa membantu proses pengecekan.","Siapkan nomor tujuan, nominal, dan waktu transaksi.","Kami tidak dapat menjamin dana kembali bila sudah digunakan penerima."],
+"Kendala transaksi di toko offline":["Simpan struk dan screenshot bukti pembayaran.","Cek riwayat transaksi untuk memastikan saldo terpotong atau tidak.","Jika sudah terpotong tapi kasir belum menerima, laporkan lewat tombol bantuan."]};
+const hist=["home"];let cur="home",curArt="",tp=null;
+function show(id,push=true){$$('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(push&&id!==hist[hist.length-1])hist.push(id);cur=id;scrollTo(0,0)}
+function back(){if(hist.length>1){hist.pop();show(hist[hist.length-1],false)}else{var r=document.referrer;if(r&&r.indexOf(location.origin)===0&&history.length>1)history.back();else location.href='index.html'}}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2200)}
+function rows(el,items,fn){el.innerHTML="";items.forEach(t=>{const b=document.createElement('button');b.className='row';b.innerHTML='<span>'+t+'</span>'+I.chev;b.onclick=()=>fn(t);el.appendChild(b)})}
+function openArt(t){curArt=t;const body=ART[t]||["Langkah-langkah berikut membantu menyelesaikan kendala ini:","Buka aplikasi dan pastikan versi terbaru.","Cek riwayat transaksi untuk memastikan statusnya.","Jika kendala masih berlanjut, laporkan lewat tombol bantuan."];
+ $('#ab').innerHTML='<h1>'+t+'</h1>'+(ART[t]?body.map(x=>'<p>'+x+'</p>').join(''):'<p>'+body[0]+'</p><ol>'+body.slice(1).map(x=>'<li>'+x+'</li>').join('')+'</ol>');
+ $$('[data-fb]').forEach(b=>b.classList.remove('sel'));show('article')}
+function openTopic(i){tp=T[i];$('#tt').textContent=tp[1];rows($('#tl'),tp[2],openArt);show('topic')}
+// build home
+$$('[data-ic]').forEach(e=>e.innerHTML=I[e.dataset.ic]);$$('[data-back]').forEach(e=>e.innerHTML=I.back);
+const sg=$('#sug');S.forEach(s=>{const b=document.createElement('button');b.innerHTML=I.spark+'<span class="t">'+s[0]+'</span>'+I.chev;b.onclick=()=>openArt(s[0]);sg.appendChild(b)});
+const hb=document.createElement('button');hb.innerHTML=I.head+'<span class="t">Masalah saya gak terdaftar di sini<small>Klik kalau kamu butuh bantuan</small></span>'+I.chev;hb.onclick=()=>openOv('contact');sg.appendChild(hb);
+sg.querySelectorAll('svg:first-child').forEach(s=>{s.style.margin='0 -8px 0 -12px'});
+T.forEach((t,i)=>{const b=document.createElement('button');b.className='tile';b.innerHTML=I[t[0]]+'<span>'+t[1]+'</span>';b.onclick=()=>openTopic(i);$('#grid').appendChild(b)});
+// nav
+document.addEventListener('click',e=>{
+ const g=e.target.closest('[data-go]');if(g){show(g.dataset.go);if(g.dataset.go==='search')setTimeout(()=>{$('#q').focus()},50)}
+ if(e.target.closest('[data-back]'))back();
+ const s=e.target.closest('[data-sheet]');if(s)openOv(s.dataset.sheet);
+ const o=e.target.closest('[data-open]');if(o){closeOv();openOv(o.dataset.open)}
+ if(e.target.closest('[data-close]')||e.target.classList.contains('ov'))closeOv();
+ const f=e.target.closest('[data-fb]');if(f){$$('[data-fb]').forEach(b=>b.classList.toggle('sel',b===f));if(f.dataset.fb==='y')toast("Terima kasih atas masukan kamu");else openOv('contact')}
+});
+function openOv(id){closeOv();$('#'+id).classList.add('on')}function closeOv(){$$('.ov').forEach(o=>o.classList.remove('on'))}
+// search
+const all=[];T.forEach(t=>t[2].forEach(a=>all.push(a)));S.forEach(s=>all.push(s[0]));
+$('#q').addEventListener('input',e=>{const v=e.target.value.trim().toLowerCase(),l=$('#sl');if(!v){l.innerHTML='';return}
+ const r=[...new Set(all)].filter(a=>a.toLowerCase().includes(v));
+ if(r.length)rows(l,r,openArt);else l.innerHTML='<div class="empty">Tidak ada hasil untuk "'+v.replace(/</g,'&lt;')+'".<br>Coba kata kunci lain atau hubungi kami.<br><button class="btn" data-sheet="contact">Hubungi kami</button></div>'});
+// call & message
+$('#docall').addEventListener('click',()=>setTimeout(closeOv,300));
+const rl=[];
+$('#send').onclick=()=>{const v=$('#mt').value.trim();if(v.length<10){$('#me').textContent="Tulis minimal 10 karakter agar kami paham masalahnya.";return}
+ $('#me').textContent="";closeOv();show('loading');setTimeout(()=>{rl.unshift(v);$('#mt').value="";hist.pop();
+ rows($('#rp'),[],()=>{});$('#rp').innerHTML='<div style="text-align:left;padding:0">'+rl.map(r=>'<div class="row" style="display:block;cursor:default"><b style="font-weight:700">Laporan terkirim</b><div style="color:#a9aeb5;font-weight:500;font-size:14px;margin-top:6px;line-height:20px">'+r.replace(/</g,'&lt;')+'</div></div>').join('')+'</div>';
+ $('#rp').className='list';show('reports');toast("Laporan terkirim")},1100)};
+</script></body></html>

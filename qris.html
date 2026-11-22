@@ -351,7 +351,7 @@ svg,img{display:block}
 var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
 var M=null,amt='',scanOn=false,stream=null,det=null,busy=false,pin='',timers=[];
 var ST=['scan','nom','rev'],cur='scan';
-var GIF='assets/qris/bayar-berhasil.gif?v=3',ANIM_MS=2200,HOLD_MS=350; /* GIF diperlambat 1,33x (±2,1 dtk) */
+var GIF='assets/qris/bayar-berhasil.gif?v=4',ANIM_MS=2200,HOLD_MS=350; /* GIF diperlambat 1,33x (±2,1 dtk) */
 new Image().src=GIF; /* preload supaya animasi langsung jalan */
 function rp(n){return 'Rp'+Number(n||0).toLocaleString('id-ID')}
 function toast(t){var e=$('#tt');e.textContent=t;e.classList.add('on');clearTimeout(toast.k);toast.k=setTimeout(function(){e.classList.remove('on')},2000)}
