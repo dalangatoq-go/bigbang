@@ -33,18 +33,33 @@ svg,img{display:block}
 #scan{background:radial-gradient(120% 80% at 50% 30%,#2a1d22 0,#17110f 55%,#0c0a0b 100%)}
 #cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
 #cam.live{opacity:1}
-/* garis scanner biru: menyapu naik-turun di seluruh area kamera (di atas sheet bawah) */
-.lines{position:absolute;left:0;right:0;top:0;bottom:calc(215px + var(--sab));pointer-events:none;overflow:hidden}
-.lines i{position:absolute;left:0;right:0;top:0;height:125px;background:repeating-linear-gradient(#1f7fe0 0 2px,transparent 2px 6px);opacity:.9;
-  -webkit-mask-image:linear-gradient(to top,#000 12%,transparent);mask-image:linear-gradient(to top,#000 12%,transparent);
-  animation:scn 3.4s linear infinite;will-change:top,transform}
-.lines i::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:#5ab0ff;box-shadow:0 0 14px 3px rgba(31,127,224,.75)}
-@keyframes scn{
-  0%{top:0;transform:scaleY(1);animation-timing-function:ease-in-out}
-  49.99%{top:calc(100% - 125px);transform:scaleY(1)}
-  50%{top:calc(100% - 125px);transform:scaleY(-1);animation-timing-function:ease-in-out}
-  100%{top:0;transform:scaleY(-1)}}
-@media (prefers-reduced-motion:reduce){.lines i{animation:none;top:calc(50% - 62px)}}
+/* intro: kamera full tanpa komponen -> laser biru turun lalu naik 1x (keluar layar penuh) -> komponen muncul */
+.lines{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.lines i{position:absolute;left:0;right:0;top:0;height:100%;opacity:0;will-change:transform;backface-visibility:hidden}
+/* turun: garis di tepi bawah, jejak tipis di atasnya */
+.lines i.d{transform:translate3d(0,calc(-100% - 12px),0);
+  background:linear-gradient(to top,#9fd6ff 0,#9fd6ff 1.5px,rgba(46,140,236,.5) 1.5px,rgba(31,127,224,.16) 26px,rgba(31,127,224,0) 58px) no-repeat bottom/100% 58px;
+  box-shadow:0 8px 14px -6px rgba(31,127,224,.9)}
+/* naik: kebalikannya, garis di tepi atas, jejak di bawahnya */
+.lines i.u{transform:translate3d(0,calc(100% + 12px),0);
+  background:linear-gradient(to bottom,#9fd6ff 0,#9fd6ff 1.5px,rgba(46,140,236,.5) 1.5px,rgba(31,127,224,.16) 26px,rgba(31,127,224,0) 58px) no-repeat top/100% 58px;
+  box-shadow:0 -8px 14px -6px rgba(31,127,224,.9)}
+.lz-go .lines i.d{animation:lzd 1.25s cubic-bezier(.45,.05,.55,.95) both}
+.lz-go .lines i.u{animation:lzu 1.25s cubic-bezier(.45,.05,.55,.95) 1.25s both}
+@keyframes lzd{0%{opacity:1;transform:translate3d(0,calc(-100% - 12px),0)}99%{opacity:1}100%{opacity:0;transform:translate3d(0,80px,0)}}
+@keyframes lzu{0%{opacity:1;transform:translate3d(0,calc(100% + 12px),0)}99%{opacity:1}100%{opacity:0;transform:translate3d(0,-80px,0)}}
+/* setelah komponen muncul: laser terus menyapu turun lalu naik, berulang */
+.lz-loop .lines i.d{animation:lzdl 3s infinite}
+.lz-loop .lines i.u{animation:lzul 3s infinite}
+@keyframes lzdl{0%{opacity:1;transform:translate3d(0,calc(-100% - 12px),0);animation-timing-function:cubic-bezier(.45,.05,.55,.95)}
+  46%{opacity:1;transform:translate3d(0,80px,0)}46.01%,100%{opacity:0;transform:translate3d(0,80px,0)}}
+@keyframes lzul{0%,50%{opacity:0;transform:translate3d(0,calc(100% + 12px),0)}
+  50.01%{opacity:1;transform:translate3d(0,calc(100% + 12px),0);animation-timing-function:cubic-bezier(.45,.05,.55,.95)}
+  96%{opacity:1;transform:translate3d(0,-80px,0)}96.01%,100%{opacity:0;transform:translate3d(0,-80px,0)}}
+#scan.intro .ibar,#scan.intro .pw{opacity:0;visibility:hidden}
+#scan.intro .sheet{animation:none;opacity:0;visibility:hidden;transform:translateY(60%)}
+#scan:not(.intro) .ibar,#scan:not(.intro) .pw{animation:fi .45s ease both}
+@keyframes fi{from{opacity:0}}
 .ibar{position:absolute;left:0;right:0;top:calc(15px + var(--sat));display:flex;justify-content:space-between;padding:0 22px;z-index:2}
 .ibar div{display:flex;gap:11px}
 .ci{position:relative;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);display:grid;place-items:center;color:#cfd5dd;backdrop-filter:blur(6px);touch-action:manipulation;transition:background .15s,transform .15s}
@@ -57,7 +72,7 @@ svg,img{display:block}
 .pw img{height:19px}
 .pill{display:flex;align-items:center;gap:7px;height:30px;padding:0 17px;border-radius:15px;background:linear-gradient(90deg,#33bfd9,#0a9a2a);border:1px solid #118a35;color:#fff;font-weight:700;font-size:13.2px}
 .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-radius:24px 24px 0 0;padding:11px 15px calc(18px + var(--sab));animation:up .5s cubic-bezier(.2,.8,.2,1) both}
-@keyframes up{from{transform:translateY(60%)}}
+@keyframes up{from{transform:translateY(60%);opacity:0}}
 .hd{width:22px;height:3px;border-radius:2px;background:#4a4f55;margin:0 auto 14px}
 .ban{display:flex;align-items:center;gap:9px;height:37px;padding:0 5px 0 9px;border-radius:20px;border:1px solid #2c3236;background:linear-gradient(90deg,#1b2124 0,#17525e 55%,#2563d8);color:#e6e9ee;font-weight:700;font-size:12.5px;margin-bottom:8px}
 .ban img{height:24px}.ban b{flex:1;font-weight:700}
@@ -243,9 +258,9 @@ svg,img{display:block}
 <div id="app">
 
 <!-- 1. SCAN -->
-<section class="s on" id="scan">
+<section class="s on intro" id="scan">
   <video id="cam" playsinline muted autoplay></video>
-  <div class="lines"><i></i></div>
+  <div class="lines"><i class="d"></i><i class="u"></i></div>
   <div class="ibar">
     <button class="ci" data-x="back" aria-label="Kembali"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H4M10 5l-7 7 7 7"/></svg></button>
     <div>
@@ -344,9 +359,9 @@ svg,img{display:block}
   <div class="bar">
     <div class="bn">Bagi jatah bayar transaksi ini bareng temenmu!</div>
     <div class="pn"><div class="tl">
-      <div class="c"><button class="tl2" type="button" style="background:#2b484a" data-t="Split - atur jumlah belum tersedia" aria-label="Split - atur jumlah"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v6.5M12 10l-6 5v5M12 10l6 5v5"/><path d="M3.5 17.5 6 20l2.5-2.5M15.5 17.5 18 20l2.5-2.5"/></svg></button><p>Split - atur jumlah</p></div>
-      <div class="c"><button class="tl2" type="button" style="background:#40484c" data-t="Split - foto struk belum tersedia" aria-label="Split - foto struk"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4L6 21z"/><path d="M9.5 8h5M9.5 12h5"/></svg></button><p>Split - foto struk</p></div>
-      <div class="c"><button class="tl2" type="button" id="shr2" style="background:#2a3c4b" aria-label="Bagi bukti bayar"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/></svg></button><p>Bagi bukti bayar</p></div>
+      <div class="c"><button class="tl2" type="button" style="background:#2b484a" data-t="Split - atur jumlah belum tersedia" aria-label="Split - atur jumlah"><img src="assets/qris/ico-split-atur.png" alt="" style="height:29.5px"></button><p>Split - atur jumlah</p></div>
+      <div class="c"><button class="tl2" type="button" style="background:#40484c" data-t="Split - foto struk belum tersedia" aria-label="Split - foto struk"><img src="assets/qris/ico-split-struk.png" alt="" style="height:25px"></button><p>Split - foto struk</p></div>
+      <div class="c"><button class="tl2" type="button" id="shr2" style="background:#2a3c4b" aria-label="Bagi bukti bayar"><img src="assets/qris/ico-bagi.png" alt="" style="height:25px"></button><p>Bagi bukti bayar</p></div>
     </div></div>
   </div>
 </section>
@@ -380,7 +395,7 @@ function clr(){timers.forEach(clearTimeout);timers=[]}
 /* ---- navigasi antar layar (tombol back perangkat ikut bekerja) ---- */
 function show(n,back){var pv=cur,pe=$('#'+pv);cur=n;$$('.s').forEach(function(s){s.classList.remove('on','back','lv')});var e=$('#'+n);if(back)e.classList.add('back');e.classList.add('on');
   clearTimeout(show.k);if(pe&&pe!==e&&ST.indexOf(pv)>-1&&ST.indexOf(n)>-1&&!REDUCE){pe.classList.add('lv');if(back)pe.classList.add('back');show.k=setTimeout(function(){pe.classList.remove('lv','back')},340)}
-  if(n==='scan')camStart();else camStop();
+  if(n==='scan'){if(window.scanReset)scanReset();camStart()}else camStop();
   if(n==='rev')review();else{clr();setTimeout(function(){if(cur!=='rev')$('#rev').classList.remove('ok')},340)}}
 function push(n){DEPTH++;history.pushState({s:n,d:DEPTH},'');show(n)}
 addEventListener('popstate',function(e){var st=e.state||{},pd=DEPTH;DEPTH=st.d||0;
@@ -522,7 +537,7 @@ function loop(){if(!scanOn)return;var v=$('#cam');if(v.readyState>=2&&!busy){bus
 function camStart(){if(scanOn)return;scanOn=true;if('BarcodeDetector' in window&&!det)try{det=new BarcodeDetector({formats:['qr_code']})}catch(_){}
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){return}
   navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(function(s){if(!scanOn){s.getTracks().forEach(function(t){t.stop()});return}
-    stream=s;var v=$('#cam');v.srcObject=s;v.play().catch(function(){});v.classList.add('live');loop()}).catch(function(){toast('Kamera tidak bisa dibuka. Pakai Upload QR.')})}
+    stream=s;var v=$('#cam');v.srcObject=s;v.play().catch(function(){});v.classList.add('live');loop()}).catch(function(){toast('Kamera tidak bisa dibuka. Pakai Upload QR.');if(window.introRun)introRun()})}
 function camStop(){scanOn=false;if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}$('#cam').classList.remove('live');$('#fl').classList.remove('on')}
 $('#fl').onclick=function(){var t=stream&&stream.getVideoTracks()[0],on=!this.classList.contains('on'),b=this;
   if(!t){toast('Kamera belum aktif');return}t.applyConstraints({advanced:[{torch:on}]}).then(function(){b.classList.toggle('on',on)},function(){toast('Senter tidak didukung')})};
@@ -532,6 +547,19 @@ $('#file').onchange=function(){var f=this.files[0];this.value='';if(!f)return;
 
 /* contoh data untuk uji tanpa QR: qris.html?demo=1 */
 if(/[?&]demo=1/.test(location.search))setTimeout(function(){mulai({name:'Toko Grosir Cendana, Kont',acq:'DANA',city:'Bandung',postal:'40272',pan:'9360091530',term:'',amount:0})},1400);
+/* intro scan (SETIAP layar scan dibuka): kamera full tanpa komponen -> laser turun+naik 1x -> komponen muncul -> laser berulang */
+(function(){var sc=$('#scan'),gen=0,started=false,tm=0,up=sc.querySelector('.lines i.u');
+  function fin(g){if(g!==gen||!sc.classList.contains('intro'))return;sc.classList.remove('intro','lz-go');sc.classList.add('lz-loop')}
+  function run(g){if(g!==gen||started)return;started=true;
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches){fin(g);return}
+    sc.classList.add('lz-go');
+    setTimeout(function(){fin(g)},2700)}
+  window.introRun=function(){run(gen)};
+  window.scanReset=function(){gen++;started=false;clearTimeout(tm);
+    sc.classList.remove('lz-go','lz-loop');sc.classList.add('intro');void sc.offsetWidth;
+    var g=gen;tm=setTimeout(function(){run(g)},2500)};
+  $('#cam').addEventListener('playing',function(){var g=gen;setTimeout(function(){run(g)},250)});
+  scanReset()})();
 camStart();
 })();
 </script>
