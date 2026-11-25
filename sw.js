@@ -15,7 +15,7 @@
    Tidak ada nomor versi yang perlu dinaikkan. Bila suatu saat ingin menghapus
    semua cache paksa, ganti CACHE saja.
    ========================================================================== */
-var CACHE = 'app-runtime-14';
+var CACHE = 'app-runtime-16';
 var GAMBAR = [];   // dibuat otomatis dari assets/img (lihat README)
 var CORE = ['./', './index.html', './akun.html', './masuk.html', './onboarding.html', './pin.html', './qris.html', './bantuan.html', './offline.html',
             './manifest.webmanifest', './update.js', './js/install.js', './css/install.css', './push.js', './js/notif.js', './js/config.js', './mynotification.mp3',
@@ -89,7 +89,7 @@ function revalidate(event, cache, req, same, force) {
   if (!force && CEK[k] && n - CEK[k] < CEK_MS) return;
   if (force && CEK[k] && n - CEK[k] < 30000) return;
   CEK[k] = n;
-  event.waitUntil((same ? fetch(new Request(req, { cache: 'no-cache' })) : fetch(req)).then(function (r) { if (r && (r.ok || r.type === 'opaque')) return cache.put(req, r.clone()); }).catch(function () {}));
+  event.waitUntil((same ? fetch(new Request(req, { cache: 'no-cache' })) : fetch(req)).then(function (r) { if (r && (same ? cacheable(r) : (r.ok || r.type === 'opaque'))) return cache.put(req, r.clone()); }).catch(function () {}));
 }
 function fresh(req) {                       // ambil dari jaringan, lewati cache HTTP browser
   return fetch(new Request(req, { cache: 'no-store' }));
@@ -100,6 +100,11 @@ function withTimeout(p, ms) {
     p.then(function (v) { clearTimeout(t); ok(v); }, function (e) { clearTimeout(t); no(e); });
   });
 }
+function bersih(r) {                        // respons hasil redirect tidak boleh dipakai untuk navigasi: salin jadi respons biasa
+  if (!r || !r.redirected) return Promise.resolve(r);
+  return r.clone().blob().then(function (b) { return new Response(b, { status: r.status, statusText: r.statusText, headers: r.headers }); });
+}
+function cacheable(r) { return !!r && r.ok && !r.redirected && r.type !== 'opaqueredirect'; }
 function offlineResp(req) {
   if (req.destination === 'image') return new Response('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>', { status: 200, headers: { 'Content-Type': 'image/svg+xml' } });
   return new Response('', { status: 503, statusText: 'Offline' });
@@ -112,8 +117,10 @@ self.addEventListener('fetch', function (event) {
   var same = url.origin === self.location.origin;
   if (!same && CDN_OK.indexOf(url.hostname) < 0) return;      // API (Supabase dll.) tidak disentuh
   if (req.headers.has('range')) return;
+  if (url.pathname.indexOf('/.well-known/') === 0) return;   // verifikasi domain TWA (assetlinks.json) harus langsung dari server
 
   event.respondWith((async function () {
+   try {
     var cache = await caches.open(CACHE);
 
     // 1) CDN & berkas statis: cache dulu; periksa pembaruan di belakang layar paling sering 1x / 10 menit per berkas
@@ -127,10 +134,10 @@ self.addEventListener('fetch', function (event) {
     // 2) Halaman HTML: tampilkan dari cache SEKETIKA, perbarui di belakang layar (stale-while-revalidate).
     //    Tanpa cache (kunjungan pertama): jaringan dengan batas waktu, lalu offline.html
     var cached = await cache.match(req, { ignoreSearch: true });
-    if (cached) { revalidate(event, cache, req, true, true); return cached; }
+    if (cached) { revalidate(event, cache, req, true, true); return await bersih(cached); }
     try {
       var r = await withTimeout(fetch(req), NAV_TIMEOUT);
-      if (r && r.ok) cache.put(req, r.clone());
+      if (cacheable(r)) cache.put(req, r.clone());
       return r;
     } catch (err) {
       if (req.mode === 'navigate') {
@@ -139,6 +146,9 @@ self.addEventListener('fetch', function (event) {
       }
       return offlineResp(req);
     }
+   } catch (fatal) {                                // apa pun yang gagal di SW: jangan sampai app gagal terbuka, langsung ke jaringan
+    try { return await fetch(req); } catch (_) { return offlineResp(req); }
+   }
   })());
 });
 
