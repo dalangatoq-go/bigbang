@@ -1,8 +1,15 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "app.vercel.gopaybygojekindonesia_xi.twa",
-        "sha256_cert_fingerprints": ["AB:6B:59:81:90:CA:16:B9:8E:23:0B:B2:48:BF:9D:0F:B1:6C:F9:6E:9F:15:06:F4:5C:F8:89:B1:CF:F4:79:23"]
-      }
-    }]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.vercel.gopaybygojekindonesia_xi.twa",
+      "sha256_cert_fingerprints": [
+        "E1:EA:39:C3:7F:9E:27:DB:05:44:BE:80:F8:AE:53:33:07:94:6B:91:94:F9:AA:40:AE:EB:67:E5:EF:CD:5C:6E",
+        "AB:6B:59:81:90:CA:16:B9:8E:23:0B:B2:48:BF:9D:0F:B1:6C:F9:6E:9F:15:06:F4:5C:F8:89:B1:CF:F4:79:23"
+      ]
+    }
+  }
+]
