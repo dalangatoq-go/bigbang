@@ -15,7 +15,7 @@
    Tidak ada nomor versi yang perlu dinaikkan. Bila suatu saat ingin menghapus
    semua cache paksa, ganti CACHE saja.
    ========================================================================== */
-var CACHE = 'app-runtime-16';
+var CACHE = 'app-runtime-17';
 var GAMBAR = [];   // dibuat otomatis dari assets/img (lihat README)
 var CORE = ['./', './index.html', './akun.html', './masuk.html', './onboarding.html', './pin.html', './qris.html', './bantuan.html', './offline.html',
             './manifest.webmanifest', './update.js', './js/install.js', './css/install.css', './push.js', './js/notif.js', './js/config.js', './mynotification.mp3',
@@ -215,6 +215,13 @@ self.addEventListener('push', function (event) {
       vibrate: [200, 100, 200],
       data: { url: './' }
     });
+  }));
+});
+/* Langganan push diganti/kedaluwarsa oleh browser: halaman akan mendaftarkan ulang saat dibuka (push.js);
+   bila ada klien terbuka, minta mereka sinkron sekarang. */
+self.addEventListener('pushsubscriptionchange', function (event) {
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (l) {
+    l.forEach(function (c) { c.postMessage({ type: 'RESUBSCRIBE' }); });
   }));
 });
 self.addEventListener('notificationclick', function (event) {

@@ -1697,14 +1697,17 @@ document.getElementById('gcr').addEventListener('click',function(e){
   var k=e.target.closest('.gcr-cat');if(k&&GCR.h){var s=GCR.kat[GCR.h.gcx_id]||{};s.k=k.getAttribute('data-k');GCR.kat[GCR.h.gcx_id]=s;gcrKatSimpan();gcrKatTampil(GCR.h);return}
   var w=e.target.closest('#gcr-tag');if(w&&GCR.h){var z=GCR.kat[GCR.h.gcx_id]||{};z.t=(z.t===false);GCR.kat[GCR.h.gcx_id]=z;gcrKatSimpan();gcrKatTampil(GCR.h)}});
 // ambil data (dipakai saat buka, saat tersambung ulang, pull-to-refresh, dan cadangan bila realtime putus)
-function sbGet(path){return fetch('https://'+SB_HOST+'/rest/v1/'+path,{headers:{apikey:SB_KEY,Accept:'application/json'},cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()})}
-var syncBusy=false;
+function sbGet(path){var ac=window.AbortController?new AbortController():null,t=ac?setTimeout(function(){ac.abort()},10000):0;   /* tanpa batas waktu, fetch yang menggantung membuat sinkron macet selamanya */
+  return fetch('https://'+SB_HOST+'/rest/v1/'+path,{headers:{apikey:SB_KEY,Accept:'application/json'},cache:'no-store',signal:ac?ac.signal:undefined}).then(function(r){clearTimeout(t);if(!r.ok)throw 0;return r.json()},function(e){clearTimeout(t);throw e})}
+var syncBusy=false,syncT=0;
 function syncAll(){if(syncBusy)return;syncBusy=true;
+  clearTimeout(syncT);syncT=setTimeout(function(){syncBusy=false},15000);   /* pengaman: kunci dilepas paling lama 15 dtk */
+  var lepas=function(){clearTimeout(syncT);syncBusy=false};
   Promise.all([
     sbGet('g?select=nominal&id=eq.1').then(function(d){applyG(d[0])}).catch(function(){}),
     sbGet('profil?select=nama,nomor_hape,email,status_verifikasi&id=eq.1').then(function(d){applyProfil(d[0])}).catch(function(){}),
-    loadRiwayat()
-  ]).then(function(){syncBusy=false})}
+    loadRiwayat().catch(function(){})
+  ]).then(lepas,lepas)}
 // realtime: klien Phoenix minimal ke Supabase Realtime (postgres_changes tabel g dan profil)
 var ws=null,wsOk=false,wsRef=0,wsHb=0,wsRetry=0,wsTimer=0,wsLast=0,WT='realtime:kuya';
 function wsSend(t,e,p){if(ws&&ws.readyState===1)ws.send(JSON.stringify({topic:t,event:e,payload:p,ref:String(++wsRef)}))}

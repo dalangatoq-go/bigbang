@@ -40,9 +40,18 @@
   };
 
   // Sinkron ulang otomatis tiap aplikasi dibuka (jika izin sudah diberikan)
-  if ('serviceWorker' in navigator && window.Notification && Notification.permission === 'granted') {
+  function sinkron() {
+    if (!('serviceWorker' in navigator) || !window.Notification || Notification.permission !== 'granted') return;
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
       return navigator.serviceWorker.ready.then(function () { return reg.pushManager.getSubscription(); });
-    }).then(function (sub) { if (sub) return daftarkan(sub); }).catch(function () {});
+    }).then(function (sub) {
+      if (sub) return daftarkan(sub);
+      // izin masih 'granted' tetapi langganan hilang (data situs dibersihkan, Chrome/Vivo membatalkan, kedaluwarsa): buat ulang tanpa gestur
+      return navigator.serviceWorker.ready.then(function (reg) {
+        return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID_PUBLIC) });
+      }).then(daftarkan);
+    }).catch(function () {});
   }
+  sinkron();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'RESUBSCRIBE') sinkron(); });
 })();

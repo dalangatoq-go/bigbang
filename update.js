@@ -47,11 +47,17 @@
       .then(function (d) { buf = d; }).catch(function () { memuat = false; });
   }
   function siapAudio() { if (!bunyi) { bunyi = new Audio('mynotification.mp3'); bunyi.preload = 'auto'; bunyi.volume = 1; } return bunyi; }
-  var EV = ['pointerdown', 'keydown', 'touchstart', 'click'];
+  /* Di Chrome Android hanya touchend/pointerup(sentuh)/click/keydown yang dihitung sebagai aktivasi pengguna;
+     pointerdown & touchstart TIDAK. Dulu semua pendengar dilepas pada kejadian pertama (pointerdown) sehingga
+     AudioContext tetap 'suspended' dan notifikasi tidak bersuara. Sekarang pendengar baru dilepas setelah 'running'. */
+  var EV = ['touchend', 'pointerup', 'click', 'keydown'];
+  function lepasKunci() { EV.forEach(function (n) { document.removeEventListener(n, bukaKunci, true); }); }
   function bukaKunci() {
-    EV.forEach(function (n) { document.removeEventListener(n, bukaKunci, true); });
-    try { var c = ctx(); if (c && c.state !== 'running') c.resume().catch(function () {}); muat(); } catch (_) {}
     try {
+      var c = ctx(); muat();
+      if (c) { var p0 = c.resume(); var cek = function () { if (c.state === 'running') lepasKunci(); }; if (p0 && p0.then) p0.then(cek, function () {}); else cek(); }
+    } catch (_) {}
+    try {                                                    // pemanasan elemen <audio> (cadangan) dengan gestur yang sah
       var a = siapAudio(); a.muted = true;
       var p = a.play();
       var selesai = function () { a.pause(); a.currentTime = 0; a.muted = false; };
@@ -59,14 +65,14 @@
     } catch (_) {}
   }
   EV.forEach(function (n) { document.addEventListener(n, bukaKunci, true); });
+  window.GPAudioState = function () { return AC ? AC.state : 'belum-dibuat'; };   // uji di chrome://inspect: GPAudioState() harus 'running' setelah satu ketukan
   document.addEventListener('DOMContentLoaded', muat);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && AC && AC.state !== 'running') AC.resume().catch(function () {}); });
   function bunyikan() {                                          // volume pemutar = 1.0 (maksimum yang boleh diatur web); tiap panggilan dibunyikan (dedup per id ada di notif.js)
     if (document.hidden) return;
     var c = ctx();
-    if (c && buf) {
+    if (c && buf && c.state === 'running') {                       // bila masih 'suspended', jangan diam-diam gagal: jatuh ke <audio>
       try {
-        if (c.state !== 'running') c.resume();
         var s = c.createBufferSource(), g = c.createGain();
         s.buffer = buf; g.gain.value = 1; s.connect(g); g.connect(c.destination); s.start(0); return;
       } catch (_) {}
