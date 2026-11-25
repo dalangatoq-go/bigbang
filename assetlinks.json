@@ -2,7 +2,7 @@
       "relation": ["delegate_permission/common.handle_all_urls"],
       "target": {
         "namespace": "android_app",
-        "package_name": "app.vercel.bigbang_main_revisi3.twa",
-        "sha256_cert_fingerprints": ["F7:17:1F:1C:71:3D:23:52:8B:4B:B8:EF:78:AB:EA:35:52:02:1A:38:E8:AF:F4:34:D4:A6:B7:29:62:CE:8D:76"]
+        "package_name": "app.vercel.gopaybygojekindonesia_xi.twa",
+        "sha256_cert_fingerprints": ["AB:6B:59:81:90:CA:16:B9:8E:23:0B:B2:48:BF:9D:0F:B1:6C:F9:6E:9F:15:06:F4:5C:F8:89:B1:CF:F4:79:23"]
       }
     }]
