@@ -1032,8 +1032,6 @@ button.sb-row:active,.kmn-step:active,.kmn-banner:active{filter:brightness(1.12)
 #kmn .kmn-switch[aria-checked="true"]{background:#0aa01b}
 #kmn .kmn-switch[aria-checked="true"] i{transform:translateX(19px)}
 #kmn .kmn-switch[aria-checked="true"]:after{opacity:0}
-#sb-toast{position:absolute;left:50%;bottom:calc(28px + var(--safe-b));transform:translate(-50%,16px);max-width:300px;padding:10px 16px;border-radius:14px;background:#3b4046;color:#fff;font:600 13px/1.35 "DM Sans Emb","DM Sans",Roboto,Arial,sans-serif;text-align:center;opacity:0;pointer-events:none;z-index:60;transition:opacity .2s,transform .2s}
-#sb-toast.on{opacity:1;transform:translate(-50%,0)}
 /* baris di tab Profil yang kini bisa diketuk */
 #profile-screen [data-sb]{cursor:pointer;-webkit-tap-highlight-color:transparent}
 #profile-screen [data-sb]:active{filter:brightness(1.12)}
@@ -1430,7 +1428,6 @@ button.sb-row:active,.kmn-step:active,.kmn-banner:active{filter:brightness(1.12)
     </div>
   </main>
 </div>
-<div id="sb-toast" role="status" aria-live="polite"></div>
 
 <div id="profile-screen" aria-label="Profil dan pengaturan keamanan">
   <header class="pf-title"><h1>Pengaturan &amp; keamanan</h1></header>
@@ -2001,8 +1998,7 @@ $('#sw').addEventListener('click',function(){var l=document.body.classList.toggl
   var ui=document.getElementById('ui');if(!ui)return;
   var $=function(s,r){return (r||document).querySelector(s)};
   function safe(f){try{return f()}catch(_){}}
-  var EL={pgn:$('#pgn'),kmn:$('#kmn')},open={pgn:false,kmn:false},tt=0,toastEl=$('#sb-toast');
-  function toast(m){if(!toastEl)return;toastEl.textContent=m;toastEl.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){toastEl.classList.remove('on')},1900)}
+  var EL={pgn:$('#pgn'),kmn:$('#kmn')},open={pgn:false,kmn:false};
   function tick(){safe(function(){navigator.vibrate&&navigator.vibrate(8)})}
   function buka(k){
     if(open[k])return;open[k]=true;var el=EL[k];
@@ -2030,11 +2026,6 @@ $('#sw').addEventListener('click',function(){var l=document.body.classList.toggl
     if(b&&ui.contains(b)){tutup(b.getAttribute('data-back'));return}
     var g=e.target.closest&&e.target.closest('#pgn [data-go]');
     if(g){tick();buka(g.getAttribute('data-go'));return}
-    var na=e.target.closest&&e.target.closest('#pgn [data-na],#kmn [data-na]');
-    if(na){
-      if(na.getAttribute('data-na')==='google')toast('Masuk dengan Google belum tersedia');
-      else toast('Fitur ini belum tersedia');
-    }
   });
 
   /* ---- titik masuk dari tab Profil ---- */
@@ -2067,10 +2058,9 @@ $('#sw').addEventListener('click',function(){var l=document.body.classList.toggl
     }).catch(function(){});
   }
   $('#kmn-lokasi').addEventListener('click',function(){
-    if(lokasi){toast('Izin lokasi sudah aktif');return}
-    if(!navigator.geolocation){toast('Perangkat ini belum mendukung izin lokasi');return}
-    navigator.geolocation.getCurrentPosition(function(){simpanLok(true);renderKmn();tick();toast('Izin lokasi aktif. Perlindunganmu bertambah')},
-      function(err){toast(err&&err.code===1?'Izin lokasi ditolak. Aktifkan lewat pengaturan perangkat.':'Lokasi belum terdeteksi. Coba lagi.')},
+    if(lokasi||!navigator.geolocation)return;
+    navigator.geolocation.getCurrentPosition(function(){simpanLok(true);renderKmn();tick()},
+      function(){},
       {timeout:10000,maximumAge:600000});   /* hanya status izin yang disimpan, koordinat tidak dipakai */
   });
   tg.addEventListener('click',function(){var o=tg.getAttribute('aria-expanded')==='true';tg.setAttribute('aria-expanded',o?'false':'true');steps.classList.toggle('shut',o)});
