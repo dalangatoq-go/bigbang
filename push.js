@@ -9,7 +9,7 @@
     window.aktifkanNotifikasi = async function () { return { ok: false, alasan: 'Library Supabase belum termuat' }; };
     return;
   }
-  var sb = window.__sb || (window.__sb = window.supabase.createClient(SB_URL, SB_KEY));
+  var sb = window.__sb || (window.__sb = window.supabase.createClient(SB_URL, SB_KEY, window.GP_CFG && window.GP_CFG.opts));
 
   function b64ToBytes(s) {
     var p = '='.repeat((4 - s.length % 4) % 4);

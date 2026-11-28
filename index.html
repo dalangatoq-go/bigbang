@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
+<meta charset="utf-8"><link rel="preconnect" href="https://erspkduznzrntfzchdbk.supabase.co" crossorigin><link rel="dns-prefetch" href="https://erspkduznzrntfzchdbk.supabase.co">
 <script id="gp-guard">/* Penjaga sesi: setelah Keluar (gp_sesi='keluar') Beranda tidak boleh tampil lagi, termasuk saat refresh,
    buka ulang, tombol Kembali (bfcache), atau pindah tab/jendela, sampai tombol hijau di akun.html ditekan
    (GP.masuk menghapus gp_sesi). Dijalankan paling awal di head, sebelum Beranda dirender. */
@@ -1548,12 +1548,23 @@ function renderRiwayat(){
   if(rows.length)elGrp.appendChild(frag);
   else if(histOk){var em=mk('div','rh-empty');em.textContent=HIST_CFG.kosong;elGrp.appendChild(em)}
   elGrp.scrollTop=y}
-function fetchLayanan(){return sbGet('layanan_history?select=kode,nama,icon_data').then(function(d){var m={};d.forEach(function(x){m[x.kode]=x});LAYANAN=m}).catch(function(){})}
-function fetchRiwayat(){return sbGet('history?select=id,gx_id,gcx_id,terjadi_pada,jenis,judul,subjudul,nominal,satuan,arah,metode,status&order=terjadi_pada.desc,id.desc&limit='+HIST_CFG.limit)
+var HIST_SEL='id,gx_id,gcx_id,terjadi_pada,jenis,judul,subjudul,nominal,satuan,arah,metode,status',layT=0,rrRaf=0;
+// banyak event realtime beruntun (mis. 5 transaksi sekaligus) cukup digambar ulang SEKALI per frame
+function renderSoon(){if(rrRaf)return;rrRaf=requestAnimationFrame(function(){rrRaf=0;renderRiwayat()})}
+function fetchLayanan(){return sbGet('layanan_history?select=kode,nama,icon_data').then(function(d){var m={};d.forEach(function(x){m[x.kode]=x});LAYANAN=m;layT=Date.now()}).catch(function(){})}
+// ikon layanan (base64) berat: cukup diambil sekali, lalu disegarkan paling sering tiap 5 menit
+function layananPerlu(){return !Object.keys(LAYANAN).length||Date.now()-layT>3e5}
+function fetchRiwayat(){return sbGet('history?select='+HIST_SEL+'&order=terjadi_pada.desc,id.desc&limit='+HIST_CFG.limit)
   .then(function(d){d.forEach(function(r){var h=toRow(r);HIST[h.id]=h});histOk=true}).catch(function(){})}
-function loadRiwayat(){return Promise.all([fetchRiwayat(),fetchLayanan()]).then(renderRiwayat)}
+// sinkron ringan: hanya baris yang id-nya lebih baru dari yang sudah dimiliki (beberapa baris, bukan 200)
+function fetchRiwayatBaru(){var mx=0;Object.keys(HIST).forEach(function(k){if(+k>mx)mx=+k});
+  return sbGet('history?select='+HIST_SEL+'&id=gt.'+mx+'&order=id.asc&limit='+HIST_CFG.limit)
+  .then(function(d){if(d.length){d.forEach(function(r){var h=toRow(r);HIST[h.id]=h})}histOk=true;return d.length}).catch(function(){return 0})}
+function loadRiwayat(){return Promise.all([fetchRiwayat(),layananPerlu()?fetchLayanan():0]).then(renderRiwayat)}
+function loadRiwayatBaru(){return fetchRiwayatBaru().then(function(n){if(n)renderSoon()})}
 function applyHistory(r){if(!r||r.id==null)return;var h=toRow(r);HIST[h.id]=h;histOk=true;
-  if(h.jenis&&!LAYANAN[h.jenis])fetchLayanan().then(renderRiwayat);else renderRiwayat()}
+  if(h.jenis&&!LAYANAN[h.jenis])fetchLayanan().then(renderSoon);else renderSoon()}
+function hapusHistory(id){if(id==null||!HIST[id])return;delete HIST[id];renderSoon()}
 renderRiwayat();
 // ===== Rincian transaksi Gx — Layanan Via GoPay (bayar_teman) dan Layanan Top Up (topup) =====
 // Ketuk list di Riwayat -> halaman rincian (#gxr). Logo = layanan_history.icon_data; rincian = baris tabel gx (history.gx_id) dari server kuya.
@@ -1697,42 +1708,56 @@ document.getElementById('gcr').addEventListener('click',function(e){
   var k=e.target.closest('.gcr-cat');if(k&&GCR.h){var s=GCR.kat[GCR.h.gcx_id]||{};s.k=k.getAttribute('data-k');GCR.kat[GCR.h.gcx_id]=s;gcrKatSimpan();gcrKatTampil(GCR.h);return}
   var w=e.target.closest('#gcr-tag');if(w&&GCR.h){var z=GCR.kat[GCR.h.gcx_id]||{};z.t=(z.t===false);GCR.kat[GCR.h.gcx_id]=z;gcrKatSimpan();gcrKatTampil(GCR.h)}});
 // ambil data (dipakai saat buka, saat tersambung ulang, pull-to-refresh, dan cadangan bila realtime putus)
-function sbGet(path){var ac=window.AbortController?new AbortController():null,t=ac?setTimeout(function(){ac.abort()},10000):0;   /* tanpa batas waktu, fetch yang menggantung membuat sinkron macet selamanya */
+function sbGet(path){var ac=window.AbortController?new AbortController():null,t=ac?setTimeout(function(){ac.abort()},8000):0;   /* tanpa batas waktu, fetch yang menggantung membuat sinkron macet selamanya */
   return fetch('https://'+SB_HOST+'/rest/v1/'+path,{headers:{apikey:SB_KEY,Accept:'application/json'},cache:'no-store',signal:ac?ac.signal:undefined}).then(function(r){clearTimeout(t);if(!r.ok)throw 0;return r.json()},function(e){clearTimeout(t);throw e})}
-var syncBusy=false,syncT=0;
-function syncAll(){if(syncBusy)return;syncBusy=true;
-  clearTimeout(syncT);syncT=setTimeout(function(){syncBusy=false},15000);   /* pengaman: kunci dilepas paling lama 15 dtk */
-  var lepas=function(){clearTimeout(syncT);syncBusy=false};
+/* syncAll(true/tanpa argumen) = penuh: saldo + profil + 200 riwayat terbaru (+ ikon layanan bila perlu).
+   syncAll(false) = ringan: saldo + profil + hanya riwayat yang id-nya lebih baru. Realtime tetap jalur utama; ini jaring pengaman. */
+var syncBusy=false,syncT=0,syncQ=false,safeAt=Date.now(),fullAt=Date.now();
+function syncAll(full){full=full!==false;
+  if(syncBusy){if(full)syncQ=true;return}   /* permintaan penuh yang tertahan diulang begitu yang berjalan selesai */
+  syncBusy=true;safeAt=Date.now();if(full)fullAt=safeAt;
+  clearTimeout(syncT);syncT=setTimeout(function(){syncBusy=false},12000);   /* pengaman: kunci dilepas paling lama 12 dtk */
+  var lepas=function(){clearTimeout(syncT);syncBusy=false;if(syncQ){syncQ=false;syncAll(true)}};
   Promise.all([
     sbGet('g?select=nominal&id=eq.1').then(function(d){applyG(d[0])}).catch(function(){}),
     sbGet('profil?select=nama,nomor_hape,email,status_verifikasi&id=eq.1').then(function(d){applyProfil(d[0])}).catch(function(){}),
-    loadRiwayat().catch(function(){})
+    (full?loadRiwayat():loadRiwayatBaru()).catch(function(){})
   ]).then(lepas,lepas)}
-// realtime: klien Phoenix minimal ke Supabase Realtime (postgres_changes tabel g dan profil)
-var ws=null,wsOk=false,wsRef=0,wsHb=0,wsRetry=0,wsTimer=0,wsLast=0,WT='realtime:kuya';
-function wsSend(t,e,p){if(ws&&ws.readyState===1)ws.send(JSON.stringify({topic:t,event:e,payload:p,ref:String(++wsRef)}))}
-function wsLater(){clearTimeout(wsTimer);wsTimer=setTimeout(wsConnect,Math.min(30000,1000*Math.pow(2,wsRetry++)))}
+// realtime: klien Phoenix minimal ke Supabase Realtime (postgres_changes tabel g, profil, history)
+var ws=null,wsOk=false,wsRef=0,wsHb=0,wsAck=0,wsCon=0,wsRetry=0,wsTimer=0,wsLast=0,WT='realtime:kuya',hideAt=0;
+function wsSend(t,e,p){if(ws&&ws.readyState===1){ws.send(JSON.stringify({topic:t,event:e,payload:p,ref:String(++wsRef)}));return true}return false}
+function wsReset(){var me=ws;ws=null;wsOk=false;clearInterval(wsHb);clearTimeout(wsAck);clearTimeout(wsCon);
+  if(me){me.onopen=me.onmessage=me.onclose=me.onerror=null;try{me.close()}catch(_){}}}   /* dilepas dulu agar close() yang menggantung tidak menahan sambung ulang */
+function wsLater(){clearTimeout(wsTimer);var d=Math.min(5000,300*Math.pow(1.8,wsRetry++));wsTimer=setTimeout(wsConnect,d*(.7+Math.random()*.6))}
+function wsNow(){clearTimeout(wsTimer);wsRetry=0;wsReset();wsConnect()}
+// uji cepat apakah soket masih hidup (sesudah layar menyala lagi / jaringan kembali): tak ada balasan dalam 4 dtk -> sambung ulang segera
+function wsProbe(){if(!ws||ws.readyState>1){wsNow();return}
+  if(ws.readyState===1&&Date.now()-wsLast>8000){wsSend('phoenix','heartbeat',{});clearTimeout(wsAck);wsAck=setTimeout(wsNow,4000)}}
 function wsConnect(){
   if(ws&&(ws.readyState===0||ws.readyState===1))return;
   var me;try{me=ws=new WebSocket('wss://'+SB_HOST+'/realtime/v1/websocket?apikey='+SB_KEY+'&vsn=1.0.0')}catch(_){wsLater();return}
-  me.onopen=function(){wsLast=Date.now();
+  clearTimeout(wsCon);wsCon=setTimeout(function(){if(ws===me&&me.readyState===0){wsReset();wsLater()}},8000);   /* sambungan yang tak kunjung terbuka */
+  me.onopen=function(){wsLast=Date.now();clearTimeout(wsCon);
     wsSend(WT,'phx_join',{config:{broadcast:{ack:false,self:false},presence:{key:''},postgres_changes:[{event:'*',schema:'public',table:'g'},{event:'*',schema:'public',table:'profil'},{event:'*',schema:'public',table:'history'}],private:false},access_token:SB_KEY});
     clearInterval(wsHb);wsHb=setInterval(function(){
-      if(Date.now()-wsLast>60000){try{me.close()}catch(_){}return}
-      wsSend('phoenix','heartbeat',{})},25000)};
-  me.onmessage=function(ev){wsLast=Date.now();var m;try{m=JSON.parse(ev.data)}catch(_){return}
-    if(m.event==='phx_reply'&&m.topic===WT){if(m.payload&&m.payload.status==='ok'){wsOk=true;wsRetry=0;syncAll()}else wsOk=false}
+      if(!wsSend('phoenix','heartbeat',{})){wsNow();return}
+      clearTimeout(wsAck);wsAck=setTimeout(wsNow,8000)},15000)};   /* tak ada frame apa pun 8 dtk setelah heartbeat = soket mati diam-diam */
+  me.onmessage=function(ev){wsLast=Date.now();clearTimeout(wsAck);var m;try{m=JSON.parse(ev.data)}catch(_){return}
+    if(m.event==='phx_reply'&&m.topic===WT){if(m.payload&&m.payload.status==='ok'){wsOk=true;wsRetry=0;syncAll(Date.now()-fullAt>2500)}else{wsOk=false;wsLater()}}   /* sinkron penuh menambal kekosongan selama terputus (dilewati bila sinkron penuh baru saja jalan, mis. saat buka) */
     else if(m.event==='postgres_changes'&&m.payload&&m.payload.data){var d=m.payload.data;
-      if(d.type==='DELETE')return;if(d.table==='g')applyG(d.record);else if(d.table==='profil')applyProfil(d.record);else if(d.table==='history'){applyHistory(d.record);if(d.type==='INSERT'&&window.GP&&GP._notifHistoryRealtime)GP._notifHistoryRealtime({'new':d.record})}}
-    else if(m.event==='phx_error'||m.event==='phx_close'){wsOk=false}};
-  me.onclose=function(){if(ws===me){wsOk=false;clearInterval(wsHb);wsLater()}};
-  me.onerror=function(){try{me.close()}catch(_){}}}
-GP.sync=syncAll;syncAll();wsConnect();
-setInterval(function(){if(!document.hidden&&!wsOk)syncAll()},4000);
-function wake(){if(document.hidden)return;syncAll();
-  if(ws&&ws.readyState===1&&Date.now()-wsLast>60000){wsOk=false;try{ws.close()}catch(_){}}
-  wsConnect()}
-document.addEventListener('visibilitychange',wake);addEventListener('online',wake);
+      if(d.type==='DELETE'){if(d.table==='history'&&d.old_record)hapusHistory(d.old_record.id);return}
+      if(d.table==='g')applyG(d.record);else if(d.table==='profil')applyProfil(d.record);else if(d.table==='history'){applyHistory(d.record);if(d.type==='INSERT'&&window.GP&&GP._notifHistoryRealtime)GP._notifHistoryRealtime({'new':d.record})}}
+    else if(m.event==='phx_error'||m.event==='phx_close'){wsOk=false;if(ws===me)wsNow()}};
+  me.onclose=function(){if(ws===me){wsReset();wsLater()}};
+  me.onerror=function(){if(ws===me){wsReset();wsLater()}}}
+GP.sync=syncAll;syncAll(true);wsConnect();
+/* jaring pengaman: realtime tersambung -> cek ringan tiap 15 dtk (penuh tiap 60 dtk); terputus -> tiap 2 dtk (penuh tiap 20 dtk) */
+setInterval(function(){if(document.hidden)return;var n=Date.now(),ok=wsOk;
+  if(n-safeAt>=(ok?15000:2000))syncAll(n-fullAt>=(ok?60000:20000))},1000);
+function wake(){if(document.hidden){hideAt=Date.now();return}
+  syncAll(!hideAt||Date.now()-hideAt>15000);hideAt=0;wsProbe()}
+document.addEventListener('visibilitychange',wake);addEventListener('online',wake);addEventListener('focus',wake);
+addEventListener('pageshow',function(e){if(e.persisted)wake()});
 // banner
 var sc=$('#scroll'),bn=$('#bn');
 $('#bnx').addEventListener('click',function(){bn.classList.add('hide')});

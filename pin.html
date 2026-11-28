@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
+<meta charset="utf-8"><link rel="preconnect" href="https://erspkduznzrntfzchdbk.supabase.co" crossorigin><link rel="dns-prefetch" href="https://erspkduznzrntfzchdbk.supabase.co">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -343,7 +343,7 @@ body.mk{--neon:#1f9e44 !important;--neon-bg:rgba(31,158,68,.14) !important}
 </div></div>
 
 <script>/* js/config.js */
-window.GP_CFG={url:'https://erspkduznzrntfzchdbk.supabase.co',
+window.GP_CFG={opts:{realtime:{heartbeatIntervalMs:15000,timeout:10000,reconnectAfterMs:function(t){return [250,500,1000,2000,4000][t-1]||5000}}},url:'https://erspkduznzrntfzchdbk.supabase.co',
   key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyc3BrZHV6bnpybnRmemNoZGJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MTIyNDYsImV4cCI6MjExMDM4ODI0Nn0.L3nQicgSXr8j_ctjRC8RxPZLSpHj71tLXljfmA3vy6I'};
 
 </script>
@@ -384,7 +384,7 @@ window.GP_CFG={url:'https://erspkduznzrntfzchdbk.supabase.co',
   GP.sb=function(){
     if(GP._sb) return GP._sb;
     if(!window.supabase||!window.GP_CFG) return null;
-    GP._sb=window.__sb||(window.__sb=window.supabase.createClient(window.GP_CFG.url,window.GP_CFG.key)); // satu koneksi realtime dipakai bersama push.js
+    GP._sb=window.__sb||(window.__sb=window.supabase.createClient(window.GP_CFG.url,window.GP_CFG.key,window.GP_CFG.opts)); // satu koneksi realtime dipakai bersama push.js
     return GP._sb;
   };
   // kembali ke halaman sebelumnya; kalau halaman dibuka langsung, pakai fallback

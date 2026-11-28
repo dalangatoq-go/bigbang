@@ -45,3 +45,14 @@ Uji lokal: `npx serve .`
 ## Catatan
 - Kalau mengubah halaman, naikkan `CACHE` di `sw.js` (mis. `app-runtime-7`) bila ingin memaksa semua pengguna mengambil ulang.
 - Supabase (URL + anon key) tertanam di `akun/masuk/onboarding/pin.html` (blok `js/config.js`).
+
+## Pembacaan server & realtime (revisi)
+- **Jalur utama**: WebSocket Supabase Realtime di `index.html` (tabel `g`, `profil`, `history`). Event dipakai langsung dari payload tanpa fetch ulang; banyak event beruntun digambar ulang sekali per frame (`renderSoon`). DELETE pada `history` ikut menghapus baris dari daftar.
+- **Sambung ulang cepat**: jeda awal 0,3 dtk, naik sampai maksimal 5 dtk (dulu 30 dtk), dengan acakan kecil. Heartbeat tiap 15 dtk; tanpa frame apa pun 8 dtk sesudahnya = soket dianggap mati dan diganti segera (tidak menunggu `close()`). Sambungan yang tak terbuka dalam 8 dtk dibatalkan.
+- **Bangun dari latar belakang**: saat layar menyala / jaringan kembali / app fokus / bfcache, soket diuji (`wsProbe`) dan data disegarkan; bila app tersembunyi < 15 dtk cukup sinkron ringan.
+- **Sinkron ringan vs penuh** (`syncAll(false|true)`): ringan = saldo + profil + hanya `history` dengan `id` lebih baru; penuh = 200 baris riwayat. Ikon layanan (`layanan_history.icon_data`, base64 berat) kini diambil sekali dan disegarkan tiap 5 menit, tidak lagi tiap sinkron.
+- **Jaring pengaman**: realtime tersambung -> cek ringan tiap 15 dtk (penuh tiap 60 dtk); terputus -> tiap 2 dtk (penuh tiap 20 dtk). Sinkron penuh juga dijalankan tiap realtime (re)join untuk menambal data selama terputus.
+- `js/config.js` (`GP_CFG.opts`) menyetel klien supabase-js: heartbeat 15 dtk, sambung ulang 0,25 -> 5 dtk. Dipakai `push.js`, `js/notif.js`, dan `akun/masuk/onboarding/pin.html`.
+- `akun.html`: payload realtime profil langsung dipakai (fetch ulang hanya cadangan).
+- `<link rel="preconnect">` ke host Supabase di semua halaman agar fetch/WebSocket pertama lebih cepat.
+- Syarat sisi server (tidak ada di repo): tabel `g`, `profil`, `history` harus ada di publication `supabase_realtime`. Cek: `select tablename from pg_publication_tables where pubname='supabase_realtime';`
